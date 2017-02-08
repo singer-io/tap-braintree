@@ -1,0 +1,81 @@
+additional_processor_response
+amount
+avs_error_response_code
+avs_postal_code_response_code
+avs_street_address_response_code
+channel
+created_at
+currency_iso_code
+cvv_response_code
+escrow_status
+gateway_rejection_reason
+id
+merchant_account_id
+order_id
+payment_instrument_type
+plan_id
+processor_authorization_code
+processor_response_code
+processor_response_text
+processor_settlement_response_code
+processor_settlement_response_text
+purchase_order_number
+recurring
+refund_ids
+refunded_transaction_id
+service_fee_amount
+settlement_batch_id
+status
+subscription_id
+tax_amount
+tax_exempt
+type
+updated_at
+voice_referral_number
+
+add_ons -> ids
+discounts -> ids
+
+custom_fields
+    name
+    value
+
+customer_details
+    company
+    email
+    fax
+    first_name
+    id
+    last_name
+    phone
+    website
+
+billing_details
+    company
+    country_code_alpha2
+    country_code_alpha3
+    country_code_numeric
+    country_name
+    extended_address
+    first_name
+    id
+    last_name
+    locality
+    postal_code
+    region
+    street_address
+
+shipping_details
+    company
+    country_code_alpha2
+    country_code_alpha3
+    country_code_numeric
+    country_name
+    extended_address
+    first_name
+    id
+    last_name
+    locality
+    postal_code
+    region
+    street_address

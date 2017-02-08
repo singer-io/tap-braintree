@@ -1,0 +1,99 @@
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "key": true
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "status": {
+            "type": ["null", "string"]
+        },
+        "type": {
+            "type": ["null", "string"]
+        },
+        "amount": {
+            "type": ["null", "number"]
+        },
+        "service_fee_amount": {
+            "type": ["null", "number"]
+        },
+        "order_id": {
+            "type": ["null", "string"]
+        },
+        "plan_id": {
+            "type": ["null", "string"]
+        },
+        "gateway_rejection_reason": {
+            "type": ["null", "string"]
+        },
+        "processor_authorization_code": {
+            "type": ["null", "string"]
+        },
+        "processor_response_code": {
+            "type": ["null", "string"]
+        },
+        "processor_response_text": {
+            "type": ["null", "string"]
+        },
+        "recurring": {
+            "type": ["null", "boolean"]
+        },
+        "currency_iso_code": {
+            "type": ["null", "string"]
+        },
+        "customer_details": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": ["null", "string"]
+                },
+                "email": {
+                    "type": ["null", "string"]
+                }
+            }
+        },
+        "credit_card_details": {
+            "type": "object",
+            "properties": {
+                "customer_location": {
+                    "type": ["null", "string"]
+                }
+            }
+        },
+        "subscription_details":{
+            "type": "object",
+            "properties": {
+                "billing_period_start_date": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "billing_period_end_date": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
