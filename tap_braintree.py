@@ -32,7 +32,11 @@ def update_state(key, dt):
 
 
 def load_schema(entity):
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "schemas", "{}.json".format(entity))
+    path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "tap_braintree",
+        "{}.json".format(entity))
+
     with open(path) as f:
         return json.load(f)
 

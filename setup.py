@@ -5,7 +5,7 @@ import os.path
 
 
 setup(name='tap-braintree',
-      version='0.1.0',
+      version='0.1.1',
       description='Taps BrainTree data',
       author='Stitch',
       url='https://github.com/stitchstreams/tap-braintree',
@@ -21,4 +21,10 @@ setup(name='tap-braintree',
           [console_scripts]
           tap-braintree=tap_braintree:main
       ''',
+      packages=['tap_braintree'],
+      package_data = {
+          'tap_braintree': [
+              'transactions.json',
+          ],
+      }
 )
