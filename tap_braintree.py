@@ -11,7 +11,7 @@ import stitchstream
 
 
 DATETIME_FMT = "%Y-%m-%dT%H:%M:%SZ"
-DEFAULT_START_DATE = datetime.datetime(2000, 1, 1).strftime(DATETIME_FMT)
+DEFAULT_START_DATE = datetime.datetime(2015, 1, 1).strftime(DATETIME_FMT)
 
 state = {
     "transactions": DEFAULT_START_DATE,
@@ -88,19 +88,28 @@ def transform_record(record, schema):
 
 
 def sync_transactions():
-    # TODO: grab day by day going forward to NOW, save state after each day
     schema = load_schema("transactions")
     stitchstream.write_schema("transactions", schema)
 
-    transactions = braintree.Transaction.search(
-        braintree.TransactionSearch.created_at >= datetime.datetime.strptime(state['transactions'], DATETIME_FMT)
-    )
-    for transaction in transactions:
-        transformed = transform_record(transaction, schema)
-        stitchstream.write_record("transactions", transformed)
-        update_state("transactions", transformed["created_at"])
+    start = datetime.datetime.strptime(state['transactions'], DATETIME_FMT)
+    now = datetime.datetime.utcnow()
 
-    stitchstream.write_state(state)
+    while start < now:
+        end = start + datetime.timedelta(days=1)
+        if end > now:
+            end = now
+
+        logger.info("Grabbing from {} to {}".format(start, end))
+        transactions = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
+        logger.info("Found {} records".format(transactions.maximum_size, start, end))
+
+        for transaction in transactions:
+            transformed = transform_record(transaction, schema)
+            stitchstream.write_record("transactions", transformed)
+            update_state("transactions", transformed["created_at"])
+            stitchstream.write_state(state)
+
+        start += datetime.timedelta(days=1)
 
 
 def do_sync():
