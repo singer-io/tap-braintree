@@ -2,8 +2,7 @@
     "type": "object",
     "properties": {
         "id": {
-            "type": "string",
-            "key": true
+            "type": "string"
         },
         "created_at": {
             "type": "string",

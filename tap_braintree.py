@@ -93,7 +93,7 @@ def transform_record(record, schema):
 
 def sync_transactions():
     schema = load_schema("transactions")
-    stitchstream.write_schema("transactions", schema)
+    stitchstream.write_schema("transactions", schema, "id")
 
     start = datetime.datetime.strptime(state['transactions'], DATETIME_FMT)
     now = datetime.datetime.utcnow()
@@ -103,9 +103,9 @@ def sync_transactions():
         if end > now:
             end = now
 
-        logger.info("Grabbing from {} to {}".format(start, end))
+        logger.info("Fetching from {} to {}".format(start, end))
         transactions = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
-        logger.info("Found {} records".format(transactions.maximum_size, start, end))
+        logger.info("Fetched {} records".format(transactions.maximum_size, start, end))
 
         for transaction in transactions:
             transformed = transform_record(transaction, schema)
