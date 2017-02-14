@@ -1,19 +1,19 @@
+import datetime
+from . import utils
+
+
 class InvalidData(Exception):
     """Raise when data doesn't validate the schema"""
 
 
-def transform_row(row, schem):
+def transform_row(row, schema):
     return _transform_field(row, schema)
-
-
-def _transform_datetime(value):
-    return value + "Z"
 
 
 def _anyOf(data, schema_list):
     for schema in schema_list:
         try:
-            return transform_field(data, schema)
+            return _transform_field(data, schema)
         except:
             pass
 
@@ -25,9 +25,9 @@ def _array(data, items_schema):
 
 
 def _object(data, properties_schema):
-    return {field: _transform_field(data[field], field_schema)
+    return {field: _transform_field(getattr(data, field), field_schema)
             for field, field_schema in properties_schema.items()
-            if field in data}
+            if hasattr(data, field)}
 
 
 def _type_transform(value, type_schema):
@@ -61,13 +61,6 @@ def _type_transform(value, type_schema):
     raise InvalidData("Unknown type {}".format(type_schema))
 
 
-def _format_transform(value, format_schema):
-    if format_schema == "date-time":
-        return _transform_datetime(value)
-
-    raise InvalidData("Unknown format {}".format(format_schema))
-
-
 def _transform_field(value, field_schema):
     if "anyOf" in field_schema:
         return _anyOf(value, field_schema["anyOf"])
@@ -78,8 +71,9 @@ def _transform_field(value, field_schema):
     if field_schema["type"] == "object":
         return _object(value, field_schema["properties"])
 
+    if isinstance(value, (datetime.date, datetime.datetime)):
+        value = utils.strftime(value)
+
     value = _type_transform(value, field_schema["type"])
-    if "format" in field_schema:
-        value = _format_transform(value, field_schema["format"])
 
     return value

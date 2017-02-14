@@ -12,7 +12,7 @@ from .transform import transform_row
 STATE = {}
 DEFAULT_START_DATE = utils.strftime(datetime.datetime.utcnow() - datetime.timedelta(days=365))
 
-logger = stitchstream.get_logger()
+logger = singer.get_logger()
 
 
 def sync_transactions():
@@ -20,7 +20,7 @@ def sync_transactions():
     singer.write_schema("transactions", schema, ["id"])
 
     now = datetime.datetime.utcnow()
-    start_date = STATE.get('transactions', DEFAULT_START_DATE)
+    start = utils.strptime(STATE.get('transactions', DEFAULT_START_DATE))
     while start < now:
         end = start + datetime.timedelta(days=1)
         if end > now:
