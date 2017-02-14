@@ -5,7 +5,7 @@ import os.path
 
 
 setup(name='tap-braintree',
-      version='0.2.0',
+      version='0.2.1',
       description='Taps BrainTree data',
       author='Stitch',
       url='https://github.com/stitchstreams/tap-braintree',
@@ -14,8 +14,7 @@ setup(name='tap-braintree',
       install_requires=[
           'stitchstream-python>=0.6.0',
           'requests==2.12.4',
-          'backoff==1.3.2',
-          'python-dateutil==2.6.0',
+          'braintree==3.34.0',
       ],
       entry_points='''
           [console_scripts]
