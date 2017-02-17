@@ -26,7 +26,7 @@ def sync_transactions():
     singer.write_schema("transactions", schema, ["id"])
 
     now = datetime.datetime.utcnow()
-    start = utils.strptime(get_state("transactions"))
+    start = utils.strptime(get_start("transactions"))
     while start < now:
         end = start + datetime.timedelta(days=1)
         if end > now:
@@ -39,10 +39,10 @@ def sync_transactions():
         for row in data:
             transformed = transform_row(row, schema)
             singer.write_record("transactions", transformed)
-            utils.update_state(STATE, "transactions", transformed["created_at"])
 
-        start += datetime.timedelta(days=1)
+        utils.update_state(STATE, "transactions", utils.strftime(end))
         singer.write_state(STATE)
+        start += datetime.timedelta(days=1)
 
 
 def do_sync():
