@@ -9,6 +9,7 @@ from . import utils
 from .transform import transform_row
 
 
+CONFIG = {}
 STATE = {}
 
 logger = singer.get_logger()
@@ -27,14 +28,15 @@ def sync_transactions():
 
     now = datetime.datetime.utcnow()
     start = utils.strptime(get_start("transactions"))
+    logger.info("transactions: Syncing from {}".format(start))
+
     while start < now:
         end = start + datetime.timedelta(days=1)
         if end > now:
             end = now
 
-        logger.info("Fetching from {} to {}".format(start, end))
         data = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
-        logger.info("Fetched {} records".format(data.maximum_size, start, end))
+        logger.info("transactions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
 
         for row in data:
             transformed = transform_row(row, schema)
@@ -55,8 +57,9 @@ def main():
     args = utils.parse_args()
 
     config = utils.load_json(args.config)
-    utils.check_config(config, ["merchant_id", "public_key", "private_key"])
+    utils.check_config(config, ["merchant_id", "public_key", "private_key", "start_date"])
     environment = getattr(braintree.Environment, config.pop("environment", "Production"))
+    CONFIG['start_date'] = config.pop('start_date')
     braintree.Configuration.configure(environment, **config)
 
     if args.state:
