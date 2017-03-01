@@ -17,7 +17,7 @@ logger = singer.get_logger()
 
 def get_start(entity):
     if entity not in STATE:
-        STATE[entity] = utils.strftime(datetime.datetime.utcnow() - datetime.timedelta(days=365))
+        STATE[entity] = CONFIG["start_date"]
 
     return STATE[entity]
 
