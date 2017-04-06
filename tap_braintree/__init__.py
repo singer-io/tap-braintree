@@ -14,6 +14,13 @@ STATE = {}
 
 logger = singer.get_logger()
 
+def get_abs_path(path):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
+
+
+def load_schema(entity):
+    return utils.load_json(get_abs_path("schemas/{}.json".format(entity)))
+
 
 def get_start(entity):
     if entity not in STATE:
@@ -23,7 +30,7 @@ def get_start(entity):
 
 
 def sync_transactions():
-    schema = utils.load_schema("transactions")
+    schema = load_schema("transactions")
     singer.write_schema("transactions", schema, ["id"])
 
     now = datetime.datetime.utcnow()
