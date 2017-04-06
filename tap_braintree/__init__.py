@@ -5,7 +5,7 @@ import datetime
 import braintree
 import singer
 
-from . import utils
+from singer import utils
 from .transform import transform_row
 
 
@@ -54,16 +54,14 @@ def do_sync():
 
 
 def main():
-    args = utils.parse_args()
-
-    config = utils.load_json(args.config)
-    utils.check_config(config, ["merchant_id", "public_key", "private_key", "start_date"])
+    args = utils.parse_args(["merchant_id", "public_key", "private_key", "start_date"])
+    config = args.config
     environment = getattr(braintree.Environment, config.pop("environment", "Production"))
     CONFIG['start_date'] = config.pop('start_date')
     braintree.Configuration.configure(environment, **config)
 
     if args.state:
-        STATE.update(utils.load_json(args.state))
+        STATE.update(args.state)
 
     do_sync()
 
