@@ -45,6 +45,9 @@
         "recurring": {
             "type": ["null", "boolean"]
         },
+        "refunded_transaction_id": {
+            "type": ["null", "string"]
+        },
         "currency_iso_code": {
             "type": ["null", "string"]
         },

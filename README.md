@@ -34,7 +34,7 @@ This tap:
     ```json
     {"merchant_id": "your-merchant-id",
      "public_key": "your-public-key",
-     "public_key": "your-private-key"}
+     "private_key": "your-private-key"}
     ```
 
 4. [Optional] Create the initial state file
