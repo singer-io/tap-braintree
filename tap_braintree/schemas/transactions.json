@@ -12,6 +12,9 @@
             "type": "string",
             "format": "date-time"
         },
+        "settlement_batch_id": {
+            "type": ["null", "string"]
+        },
         "status": {
             "type": ["null", "string"]
         },
@@ -96,6 +99,25 @@
                     ]
                 }
             }
+        },
+        "disbursement_details": {
+          "type": "object",
+          "properties": {
+            "disbursement_date": {
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
+            },
+            "success": {
+                "type": ["null", "boolean"]
+            }
+          }
         }
     }
 }
