@@ -101,23 +101,30 @@
             }
         },
         "disbursement_details": {
-          "type": "object",
-          "properties": {
-            "disbursement_date": {
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    {
-                        "type": "null"
-                    }
-                ]
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "disbursement_date": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "success": {
+                    "type": ["null", "boolean"]
+                }
+              }
             },
-            "success": {
-                "type": ["null", "boolean"]
+            {
+              "type": "null"
             }
-          }
+          ]
         }
     }
 }
