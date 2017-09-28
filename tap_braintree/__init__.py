@@ -61,7 +61,7 @@ def do_sync():
     logger.info("Sync completed")
 
 
-def main():
+def main_impl():
     args = utils.parse_args(["merchant_id", "public_key", "private_key", "start_date"])
     config = args.config
     environment = getattr(braintree.Environment, config.pop("environment", "Production"))
@@ -73,6 +73,12 @@ def main():
 
     do_sync()
 
+def main():
+    try:
+        main_impl()
+    except Exception as exc:
+        LOGGER.critical(exc)
+        raise exc
 
 if __name__ == '__main__':
     main()
