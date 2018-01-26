@@ -10,7 +10,7 @@ setup(name='tap-braintree',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
       py_modules=['tap_braintree'],
       install_requires=[
-          'singer-python==1.2.0',
+          'singer-python==5.0.4',
           'requests==2.12.4',
           'braintree==3.34.0',
       ],
