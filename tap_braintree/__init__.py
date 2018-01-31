@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import pytz
 
 import braintree
 import singer
@@ -32,10 +33,10 @@ def get_start(entity):
 
 def sync_transactions():
     schema = load_schema("transactions")
-    singer.write_schema("transactions", schema, ["id"])
+    singer.write_schema("transactions", schema, ["id"], bookmark_properties=['created_at'])
 
-    now = datetime.datetime.utcnow()
-    start = utils.strptime(get_start("transactions"))
+    now = utils.now()
+    start = utils.strptime(get_start("transactions")).replace(tzinfo=pytz.UTC)
     logger.info("transactions: Syncing from {}".format(start))
 
     while start < now:
@@ -44,11 +45,13 @@ def sync_transactions():
             end = now
 
         data = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
+        time_extracted = utils.now()
+
         logger.info("transactions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
 
         for row in data:
             transformed = transform_row(row, schema)
-            singer.write_record("transactions", transformed)
+            singer.write_record("transactions", transformed, time_extracted=time_extracted)
 
         utils.update_state(STATE, "transactions", utils.strftime(end))
         singer.write_state(STATE)
