@@ -72,12 +72,15 @@ def _transform_field(value, field_schema):
     if field_schema["type"] == "object":
         return _object(value, field_schema["properties"])
 
+    # Ordering of isinstance datetime checks matters
+    # must check datetime.datetime first or it matches against datetime.date
+    if isinstance(value, datetime.datetime):
+        value = utils.strftime(value.replace(tzinfo=pytz.UTC))
+
     if isinstance(value, datetime.date):
         dt = datetime.datetime(value.year, value.month, value.day, tzinfo=pytz.UTC)
         value = utils.strftime(dt)
 
-    if isinstance(value, datetime.datetime):
-        value = utils.strftime(value.replace(tzinfo=pytz.UTC))
 
     value = _type_transform(value, field_schema["type"])
 
