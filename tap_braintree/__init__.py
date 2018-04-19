@@ -2,7 +2,7 @@
 
 import datetime
 import os
-import pytz
+from datetime import timezone
 
 import braintree
 import singer
@@ -13,6 +13,8 @@ from .transform import transform_row
 
 CONFIG = {}
 STATE = {}
+TRAILING_DAYS = datetime.timedelta(days=30)
+DEFAULT_TIMESTAMP = "1970-01-01T00:00:00.000000Z"
 
 logger = singer.get_logger()
 
@@ -30,32 +32,52 @@ def get_start(entity):
 
     return STATE[entity]
 
+def to_utc(dt):
+    return dt.replace(tzinfo=timezone.utc)
 
 def sync_transactions():
     schema = load_schema("transactions")
     singer.write_schema("transactions", schema, ["id"], bookmark_properties=['created_at'])
 
-    now = utils.now()
-    start = utils.strptime(get_start("transactions")).replace(tzinfo=pytz.UTC)
+    latest_updated_at = to_utc(utils.strptime(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP)))
+    latest_start_date = to_utc(utils.strptime(get_start("transactions")))
+    start = latest_start_date - TRAILING_DAYS
+    end = utils.now()
+
     logger.info("transactions: Syncing from {}".format(start))
+    logger.info("transactions: latest_updated_at from {}".format(latest_updated_at))
+    logger.info("transactions: latest_start_date from {}".format(latest_start_date))
 
-    while start < now:
-        end = start + datetime.timedelta(days=1)
-        if end > now:
-            end = now
+    data = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
+    time_extracted = utils.now()
 
-        data = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
-        time_extracted = utils.now()
+    logger.info("transactions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
 
-        logger.info("transactions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
+    row_written_count = 0
 
-        for row in data:
-            transformed = transform_row(row, schema)
+    # Note: requires fetching multiple days at once then sorting on updated_at
+    # in order to assure that we get ratchet updated_at correctly.
+    for row in sorted(data, key=lambda x:  getattr(x, 'updated_at')):
+        # Ensure updated_at consistency
+        if not getattr(row, 'updated_at'):
+            row.updated_at = row.created_at
+
+        transformed = transform_row(row, schema)
+        updated_at = to_utc(row.updated_at)
+
+        # Use >= due to non monotonic updated_at values
+        if updated_at >= latest_updated_at:
+            if updated_at > latest_updated_at:
+                latest_updated_at = updated_at
+
             singer.write_record("transactions", transformed, time_extracted=time_extracted)
+            row_written_count += 1
 
-        utils.update_state(STATE, "transactions", utils.strftime(end))
-        singer.write_state(STATE)
-        start += datetime.timedelta(days=1)
+    logger.info("transactions: Written {} records from {} - {}".format(row_written_count, start, end))
+
+    STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
+    utils.update_state(STATE, "transactions", utils.strftime(end))
+    singer.write_state(STATE)
 
 
 def do_sync():
