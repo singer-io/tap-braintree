@@ -14,7 +14,7 @@ from .transform import transform_row
 CONFIG = {}
 STATE = {}
 TRAILING_DAYS = datetime.timedelta(days=30)
-DEFAULT_TIMESTAMP = "1970-01-01T00:00:00.000000Z"
+DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 
 logger = singer.get_logger()
 
