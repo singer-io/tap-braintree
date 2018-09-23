@@ -40,6 +40,7 @@ def sync_transactions():
     singer.write_schema("transactions", schema, ["id"], bookmark_properties=['created_at'])
 
     latest_updated_at = to_utc(utils.strptime(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP)))
+    run_maximum_updated_at = latest_updated_at
     latest_start_date = to_utc(utils.strptime(get_start("transactions")))
     start = latest_start_date - TRAILING_DAYS
     end = utils.now()
@@ -57,7 +58,7 @@ def sync_transactions():
 
     # Note: requires fetching multiple days at once then sorting on updated_at
     # in order to assure that we get ratchet updated_at correctly.
-    for row in sorted(data, key=lambda x:  getattr(x, 'updated_at')):
+    for row in data:
         # Ensure updated_at consistency
         if not getattr(row, 'updated_at'):
             row.updated_at = row.created_at
@@ -66,15 +67,18 @@ def sync_transactions():
         updated_at = to_utc(row.updated_at)
 
         # Use >= due to non monotonic updated_at values
+        # Is this more recent than our past stored value of update_at?
+        # Update our high water mark for updated_at in this run
         if updated_at >= latest_updated_at:
-            if updated_at > latest_updated_at:
-                latest_updated_at = updated_at
+            if updated_at > run_maximum_updated_at:
+                run_maximum_updated_at = updated_at
 
             singer.write_record("transactions", transformed, time_extracted=time_extracted)
             row_written_count += 1
 
     logger.info("transactions: Written {} records from {} - {}".format(row_written_count, start, end))
 
+    latest_updated_at = run_maximum_updated_at
     STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
     utils.update_state(STATE, "transactions", utils.strftime(end))
     singer.write_state(STATE)
