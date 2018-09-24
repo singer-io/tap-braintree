@@ -46,13 +46,13 @@ def sync_transactions():
     end = utils.now()
 
     logger.info("transactions: Syncing from {}".format(start))
-    logger.info("transactions: latest_updated_at from {}".format(latest_updated_at))
-    logger.info("transactions: latest_start_date from {}".format(latest_start_date))
+    logger.debug("transactions: latest_updated_at from {}".format(latest_updated_at))
+    logger.debug("transactions: latest_start_date from {}".format(latest_start_date))
 
     data = braintree.Transaction.search(braintree.TransactionSearch.created_at.between(start, end))
     time_extracted = utils.now()
 
-    logger.info("transactions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
+    logger.debug("transactions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
 
     row_written_count = 0
 
