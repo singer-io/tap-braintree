@@ -1,5 +1,5 @@
 import datetime
-import pytz
+from datetime import timezone
 from . import utils
 
 
@@ -75,10 +75,10 @@ def _transform_field(value, field_schema):
     # Ordering of isinstance datetime checks matters
     # must check datetime.datetime first or it matches against datetime.date
     if isinstance(value, datetime.datetime):
-        value = utils.strftime(value.replace(tzinfo=pytz.UTC))
+        value = utils.strftime(value.replace(tzinfo=timezone.utc))
 
     if isinstance(value, datetime.date):
-        dt = datetime.datetime(value.year, value.month, value.day, tzinfo=pytz.UTC)
+        dt = datetime.datetime(value.year, value.month, value.day, tzinfo=timezone.utc)
         value = utils.strftime(dt)
 
 
