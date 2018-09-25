@@ -2,6 +2,14 @@
 
 import datetime
 import os
+# TODO I'm sorry to do this to you. We had a discussion internally and the
+# Singer team is settled on using `pytz` exclusively for all timezone
+# needs. The more rapidly updated TZ database is a requirement. Please
+# convert everything back to `pytz`. I would absolutely accept a [best
+# practices][1] PR to add it to the [dates section][2].
+#
+# [1]: https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#best-practices-for-building-a-singer-tap
+# [2]: https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#dates
 from datetime import timezone
 
 import braintree
@@ -56,6 +64,10 @@ def sync_transactions():
 
     row_written_count = 0
 
+    # TODO I think this comment is now out of date, as we're clearly not
+    # sorting anymore. Let's remove it if that's the case or clarify it if
+    # it's not.
+    #
     # Note: requires fetching multiple days at once then sorting on updated_at
     # in order to assure that we get ratchet updated_at correctly.
     for row in data:
@@ -73,6 +85,11 @@ def sync_transactions():
 
             singer.write_record("transactions", transformed, time_extracted=time_extracted)
             row_written_count += 1
+        # TODO I think it would be useful to have an `else` here that
+        # incremented a `row_skipped_count` counter, as this change is
+        # very likely to slow performance down for the tap. It would be
+        # useful for people running it to see how much work it's doing
+        # just to get those updates.
 
     logger.info("transactions: Written {} records from {} - {}".format(row_written_count, start, end))
 
