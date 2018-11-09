@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='tap-braintree',
-      version='0.7.0',
+      version='0.7.1',
       description='Singer.io tap for extracting data from the Braintree API',
       author='Stitch',
       url='http://singer.io',
@@ -11,7 +11,7 @@ setup(name='tap-braintree',
       py_modules=['tap_braintree'],
       install_requires=[
           'singer-python==5.0.4',
-          'requests==2.12.4',
+          'requests==2.20.0',
           'braintree==3.34.0',
       ],
       entry_points='''

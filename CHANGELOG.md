@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1
+  * Update version of `requests` to `0.20.0` in response to CVE 2018-18074
+
 ## 0.7.0
   * Modifies the tap to capture updated transactions by:
       * bookmarking both the latest `created_at` and `updated_at`
