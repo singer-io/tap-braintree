@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import datetime
+from datetime import datetime, timedelta
 import os
 import pytz
+
 
 import braintree
 import singer
@@ -18,6 +19,7 @@ DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 
 logger = singer.get_logger()
 
+
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
@@ -31,6 +33,7 @@ def get_start(entity):
         STATE[entity] = CONFIG["start_date"]
 
     return STATE[entity]
+
 
 def to_utc(dt):
     return dt.replace(tzinfo=pytz.UTC)
@@ -93,10 +96,17 @@ def do_sync():
 
 
 def main_impl():
-    args = utils.parse_args(["merchant_id", "public_key", "private_key", "start_date"])
+    args = utils.parse_args(
+        ["merchant_id", "public_key", "private_key", "start_date"]
+    )
     config = args.config
-    environment = getattr(braintree.Environment, config.pop("environment", "Production"))
+
+    environment = getattr(
+        braintree.Environment, config.pop("environment", "Production")
+    )
+
     CONFIG['start_date'] = config.pop('start_date')
+
     braintree.Configuration.configure(environment, **config)
 
     if args.state:
@@ -104,12 +114,14 @@ def main_impl():
 
     do_sync()
 
+
 def main():
     try:
         main_impl()
     except Exception as exc:
         logger.critical(exc)
         raise exc
+
 
 if __name__ == '__main__':
     main()
