@@ -14,7 +14,7 @@ from .transform import transform_row
 
 CONFIG = {}
 STATE = {}
-TRAILING_DAYS = datetime.timedelta(days=30)
+TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 
 logger = singer.get_logger()
@@ -37,6 +37,22 @@ def get_start(entity):
 
 def to_utc(dt):
     return dt.replace(tzinfo=pytz.UTC)
+
+
+def daterange(start_date, end_date):
+    # set to start of day
+    start_date = to_utc(
+        datetime.combine(
+            start_date.date(),
+            datetime.min.time()  # set to the 0:00 on the day of the start date
+        )
+    )
+
+    end_date = to_utc(end_date + timedelta(1))
+
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n), start_date + timedelta(n + 1)
+
 
 def sync_transactions():
     schema = load_schema("transactions")
