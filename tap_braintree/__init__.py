@@ -40,6 +40,25 @@ def to_utc(dt):
 
 
 def daterange(start_date, end_date):
+    """
+    Generator function that produces an iterable list of days between the two
+    dates start_date and end_date as a tuple pair of datetimes.
+
+    Note:
+        All times are set to 0:00. Designed to be used in date query where query
+        logic would be record_date >= 2019-01-01 0:00 and record_date < 2019-01-02 0:00
+
+    Args:
+        start_date (datetime): start of period
+        end_date (datetime): end of period
+
+    Yields:
+        tuple: daily period
+            * datetime: day within range
+            * datetime: day within range + 1 day
+
+    """
+
     # set to start of day
     start_date = to_utc(
         datetime.combine(
