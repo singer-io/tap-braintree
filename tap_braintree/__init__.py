@@ -132,12 +132,16 @@ def sync_transactions():
             # if disbursement is successful, get disbursement date
             # set disbursement datetime to min if not found
 
-            if row.disbursement_details.disbursement_date is None:
-                row.disbursement_details.disbursement_date = datetime.min
+            if row.disbursement_details is None:
+                disbursement_date = datetime.min
 
-            disbursement_date = to_utc(datetime.combine(
-                row.disbursement_details.disbursement_date,
-                datetime.min.time()))
+            else:
+                if row.disbursement_details.disbursement_date is None:
+                    row.disbursement_details.disbursement_date = datetime.min
+
+                disbursement_date = to_utc(datetime.combine(
+                    row.disbursement_details.disbursement_date,
+                    datetime.min.time()))
 
             # Is this more recent than our past stored value of update_at?
             # Is this more recent than our past stored value of disbursement_date?
