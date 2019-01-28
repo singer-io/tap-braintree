@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0
+  * Use `disbursement_date` in addition to `updated_at` to sync updated records [#14](https://github.com/singer-io/tap-braintree/pull/14)
+  * Add `payment_instrument_type`, `credit_card_details`, and `paypal_details` to `transactions` schema [#15](https://github.com/singer-io/tap-braintree/pull/15)
+
 ## 0.7.1
   * Update version of `requests` to `2.20.0` in response to CVE 2018-18074
 
