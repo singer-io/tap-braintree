@@ -153,7 +153,7 @@ def sync_transactions():
             if (
                 updated_at >= latest_updated_at
             ) or (
-                disbursement_date > latest_disbursement_date
+                disbursement_date >= latest_disbursement_date
             ):
 
                 if updated_at > run_maximum_updated_at:
