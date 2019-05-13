@@ -79,17 +79,15 @@ def sync_transactions():
     singer.write_schema("transactions", schema, ["id"],
                         bookmark_properties=['created_at'])
 
-    latest_updated_at = to_utc(utils.strptime(
-        STATE.get('latest_updated_at', DEFAULT_TIMESTAMP)))
+    latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
 
     run_maximum_updated_at = latest_updated_at
 
-    latest_disbursement_date = to_utc(utils.strptime(
-        STATE.get('latest_disbursement_date', DEFAULT_TIMESTAMP)))
+    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursment_date', DEFAULT_TIMESTAMP))
 
     run_maximum_disbursement_date = latest_disbursement_date
 
-    latest_start_date = to_utc(utils.strptime(get_start("transactions")))
+    latest_start_date = utils.strptime_to_utc(get_start("transactions"))
 
     period_start = latest_start_date - TRAILING_DAYS
 
