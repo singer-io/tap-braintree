@@ -205,7 +205,8 @@ def do_sync():
     logger.info("Sync completed")
 
 
-def main_impl():
+@utils.handle_top_exception(logger)
+def main():
     args = utils.parse_args(
         ["merchant_id", "public_key", "private_key", "start_date"]
     )
@@ -222,15 +223,12 @@ def main_impl():
     if args.state:
         STATE.update(args.state)
 
-    do_sync()
-
-
-def main():
     try:
-        main_impl()
-    except Exception as exc:
-        logger.critical(exc)
-        raise exc
+        do_sync()
+    except braintree.exceptions.authentication_error.AuthenticationError:
+        logger.critical('Authentication error occured. '
+                        'Please check your merchant_id, public_key, and '
+                        'private_key for errors', exc_info=True)
 
 
 if __name__ == '__main__':
