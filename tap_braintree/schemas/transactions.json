@@ -57,6 +57,9 @@
         "currency_iso_code": {
             "type": ["null", "string"]
         },
+        "merchant_account_id": {
+            "type": ["null", "string"]
+        },
         "customer_details": {
             "type": "object",
             "properties": {
