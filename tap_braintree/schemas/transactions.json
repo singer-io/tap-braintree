@@ -60,6 +60,9 @@
         "merchant_account_id": {
             "type": ["null", "string"]
         },
+        "subscription_id": {
+            "type": ["null", "string"]
+        },
         "customer_details": {
             "type": "object",
             "properties": {
