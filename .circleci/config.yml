@@ -21,4 +21,4 @@ jobs:
           name: 'Unit Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
-            nosetests tests/unittests
+            nosetests tests
