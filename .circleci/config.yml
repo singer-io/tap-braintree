@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: 218546966473.dkr.ecr.us-east-1.amazonaws.com/circle-ci:tap-tester
+    steps:
+      - checkout
+      - run:
+          name: 'Setup'
+          command: |
+            python3 -m venv /usr/local/share/virtualenvs/tap-braintree
+            source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            pip install -U 'pip<19.2' setuptools
+            pip install .[dev]
+      - run:
+          name: 'Pylint'
+          command: |
+            source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            pylint tap_braintree --disable missing-docstring,logging-format-interpolation,no-member,broad-except,redefined-variable-type,too-many-branches,too-few-public-methods,wrong-import-order,too-many-locals,line-too-long,invalid-name,bare-except,no-else-raise,cyclic-import,bad-continuation,undefined-loop-variable
+      - run:
+          name: 'Unit Tests'
+          command: |
+            source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            nosetests tests
