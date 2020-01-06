@@ -10,6 +10,7 @@ jobs:
           command: |
             python3 -m venv /usr/local/share/virtualenvs/tap-braintree
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            pip install -U 'pip<19.2' setuptools
             pip install .[dev]
       - run:
           name: 'Pylint'
