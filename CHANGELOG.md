@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.1
+  * Add `subscription_id` to `transactions` stream [#25](https://github.com/singer-io/tap-braintree/pull/25)
+
 ## 0.8.0
   * Use `disbursement_date` in addition to `updated_at` to sync updated records [#14](https://github.com/singer-io/tap-braintree/pull/14)
   * Add `payment_instrument_type`, `credit_card_details`, and `paypal_details` to `transactions` schema [#15](https://github.com/singer-io/tap-braintree/pull/15)
