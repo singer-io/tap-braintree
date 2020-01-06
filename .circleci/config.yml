@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.4-jessie-browsers
+    steps:
+      - checkout
+      - run:
+          name: 'Setup'
+          command: |
+            python3 -m venv ~/.virtualenvs/tap-braintree
+            source ~/.virtualenvs/tap-braintree/bin/activate
+            pip install .
+            pip install pylint
+      - run:
+          name: 'Pylint'
+          command: |
+            source ~/.virtualenvs/tap-braintree/bin/activate
+            pylint tap_braintree --disable missing-docstring,logging-format-interpolation,no-member,broad-except,redefined-variable-type,too-many-branches,too-few-public-methods,wrong-import-order,too-many-locals,line-too-long,invalid-name,bare-except,no-else-raise,cyclic-import,bad-continuation,undefined-loop-variable
