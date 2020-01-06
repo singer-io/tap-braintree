@@ -14,6 +14,13 @@ setup(name='tap-braintree',
           'requests==2.20.0',
           'braintree==3.53.0',
       ],
+      extras_require={
+          'dev': [
+              'pylint',
+              'ipdb',
+              'nose',
+          ]
+      },
       entry_points='''
           [console_scripts]
           tap-braintree=tap_braintree:main

@@ -10,8 +10,7 @@ jobs:
           command: |
             python3 -m venv /usr/local/share/virtualenvs/tap-braintree
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
-            pip install .
-            pip install pylint
+            pip install .[dev]
       - run:
           name: 'Pylint'
           command: |
