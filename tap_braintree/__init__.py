@@ -185,9 +185,9 @@ def sync_transactions():
         run_maximum_disbursement_date
     ))
 
-    latest_updated_at = run_maximum_updated_at
+    latest_updated_at = min(run_maximum_updated_at, period_end)
 
-    latest_disbursement_date = run_maximum_disbursement_date
+    latest_disbursement_date = min(run_maximum_disbursement_date, period_end)
 
     STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
 
