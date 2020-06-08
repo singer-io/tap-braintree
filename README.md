@@ -35,10 +35,11 @@ This tap:
     {"merchant_id": "your-merchant-id",
      "public_key": "your-public-key",
      "private_key": "your-private-key",
-     "start_date": "2020-05-06"}
+     "start_date": "2017-01-17T20:32:05Z"}
     ```
    
-   For debugging, you can also provide `"environment": "Sandbox"`.
+   If desired, you can also provide `"environment": "Sandbox"` (useful for running it 
+   locally during development).
 
 4. [Optional] Create the initial state file
 
