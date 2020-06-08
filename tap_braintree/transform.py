@@ -66,6 +66,10 @@ def _transform_field(value, field_schema):
     if "anyOf" in field_schema:
         return _anyOf(value, field_schema["anyOf"])
 
+    if "type" not in field_schema:
+        # indicates no typing information so don't bother transforming it
+        return value
+
     if field_schema["type"] == "array":
         return _array(value, field_schema["items"])
 
