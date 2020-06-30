@@ -91,7 +91,9 @@ def sync_transactions():
 
     period_start = latest_start_date - TRAILING_DAYS
 
-    period_end = utils.now()
+    # TODO: Change this back, altered for testing
+    # period_end = utils.now()
+    period_end = to_utc(datetime(2019, 2, 1, 0, 0, 0, 0))
 
     logger.info("transactions: Syncing from {}".format(period_start))
 
@@ -199,9 +201,99 @@ def sync_transactions():
     singer.write_state(STATE)
 
 
+def sync_disputes():
+    schema = load_schema("disputes")
+
+    singer.write_schema("disputes", schema, ["id"],
+                        bookmark_properties=['created_at'])
+
+    latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
+
+    run_maximum_updated_at = latest_updated_at
+
+    latest_start_date = utils.strptime_to_utc(get_start("disputes"))
+
+    period_start = latest_start_date - TRAILING_DAYS
+
+    # TODO: Change this back, altered for testing
+    # period_end = utils.now()
+    period_end = to_utc(datetime(2019, 2, 1, 0, 0, 0, 0))
+
+    logger.info("disputes: Syncing from {}".format(period_start))
+
+    logger.info("disputes: latest_updated_at from {}".format(latest_updated_at))
+
+    logger.info("disputes: latest_start_date from {}".format(
+        latest_start_date
+    ))
+
+    # increment through each day (20k results max from api)
+    for start, end in daterange(period_start, period_end):
+
+        end = min(end, period_end)
+
+        data = braintree.Dispute.search(
+            braintree.DisputeSearch.received_date.between(start, end))
+        time_extracted = utils.now()
+        logger.info("disputes: Fetched records from {} - {}".format(start, end))
+
+        row_written_count = 0
+        row_skipped_count = 0
+
+        for row in data.disputes.items:
+            # Ensure updated_at consistency
+            if not getattr(row, 'updated_at'):
+                row.updated_at = row.created_at
+
+            transformed = transform_row(row, schema)
+            if isinstance(row.updated_at, str):
+                row.updated_at = datetime.strptime(row.updated_at, '%Y-%m-%dT%H:%M:%SZ')
+                
+            updated_at = to_utc(row.updated_at)
+
+            # Is this more recent than our past stored value of update_at?
+            # Use >= for updated_at due to non monotonic updated_at values
+            # Update our high water mark for updated_at in this run
+            if (
+                updated_at >= latest_updated_at
+            ):
+
+                if updated_at > run_maximum_updated_at:
+                    run_maximum_updated_at = updated_at
+
+                singer.write_record("disputes", transformed,
+                                    time_extracted=time_extracted)
+                row_written_count += 1
+
+            else:
+                row_skipped_count += 1
+        if row_written_count > 0:
+            logger.info("disputes: Written {} records from {} - {}".format(
+                row_written_count, start, end
+            ))
+        if row_skipped_count > 0:
+            logger.info("disputes: Skipped {} records from {} - {}".format(
+                row_skipped_count, start, end
+            ))
+
+    # End day loop
+    logger.info("disputes: Complete. Last updated record: {}".format(
+        run_maximum_updated_at
+    ))
+
+    latest_updated_at = run_maximum_updated_at
+
+    STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
+
+    utils.update_state(STATE, "disputes", utils.strftime(end))
+
+    singer.write_state(STATE)
+
+
 def do_sync():
     logger.info("Starting sync")
     sync_transactions()
+    sync_disputes()
     logger.info("Sync completed")
 
 

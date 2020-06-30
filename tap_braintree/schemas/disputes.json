@@ -1,0 +1,173 @@
+{
+	"type": "object",
+	"properties": {
+		"id": {
+			"type": "string"
+		},
+		"amount_disputed": {
+			"type": ["null", "number"]
+		},
+		"amount_won": {
+			"type": ["null", "number"]
+		},
+		"case_number": {
+			"type": ["null", "string"]
+		},
+		"created_at": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"currency_iso_code": {
+			"type": ["null", "string"]
+		},
+		"evidence": {
+			"anyOf": [{
+					"type": "object",
+					"properties": {
+						"comment": {
+							"type": ["null", "string"]
+						},
+						"created_at": {
+							"type": "string",
+							"format": "date-time"
+						},
+						"id": {
+							"type": "string"
+						},
+						"sent_to_processor_at": {
+							"anyOf": [{
+									"type": "string",
+									"format": "date-time"
+								},
+								{
+									"type": "null"
+								}
+							]
+						},
+						"url": {
+							"type": ["null", "string"]
+						}
+					}
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"graphql_id": {
+			"type": ["null", "string"]
+		},
+		"kind": {
+			"type": ["null", "string"]
+		},
+		"merchant_account_id": {
+			"type": "string"
+		},
+		"original_dispute_id": {
+			"type": ["null", "string"]
+		},
+		"processor_comments": {
+			"type": ["null", "string"]
+		},
+		"reason": {
+			"type": ["null", "string"]
+		},
+		"reason_code": {
+			"type": ["null", "string"]
+		},
+		"reason_description": {
+			"type": ["null", "string"]
+		},
+		"received_date": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"reference_number": {
+			"type": ["null", "string"]
+		},
+		"reply_by_date": {
+			"anyOf": [{
+					"type": "string",
+					"format": "date-time"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"status": {
+			"type": ["null", "string"]
+		},
+		"status_history": {
+			"anyOf": [{
+					"type": "object",
+					"properties": {
+						"disbursement_date": {
+							"anyOf": [{
+									"type": "string",
+									"format": "date-time"
+								},
+								{
+									"type": "null"
+								}
+							]
+						},
+						"effective_date": {
+							"anyOf": [{
+									"type": "string",
+									"format": "date-time"
+								},
+								{
+									"type": "null"
+								}
+							]
+						},
+						"status": {
+							"type": ["null", "string"]
+						},
+						"timestamp": {
+							"anyOf": [{
+									"type": "string",
+									"format": "date-time"
+								},
+								{
+									"type": "null"
+								}
+							]
+						}
+					}
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"transaction": {
+			"anyOf": [{
+					"type": "object",
+					"properties": {
+						"id": {
+							"type": ["null", "string"]
+						},
+						"order_id": {
+							"type": ["null", "string"]
+						}
+					}
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"updated_at": {
+			"anyOf": [{
+					"type": "string",
+					"format": "date-time"
+				},
+				{
+					"type": "null"
+				}
+			]
+		}
+	}
+}
