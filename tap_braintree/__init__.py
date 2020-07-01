@@ -170,13 +170,14 @@ def sync_transactions():
 
                 row_skipped_count += 1
 
-        logger.info("transactions: Written {} records from {} - {}".format(
-            row_written_count, start, end
-        ))
-
-        logger.info("transactions: Skipped {} records from {} - {}".format(
-            row_skipped_count, start, end
-        ))
+        if row_written_count > 0:
+            logger.info("disputes: Written {} records from {} - {}".format(
+                row_written_count, start, end
+            ))
+        if row_skipped_count > 0:
+            logger.info("disputes: Skipped {} records from {} - {}".format(
+                row_skipped_count, start, end
+            ))
 
     # End day loop
     logger.info("transactions: Complete. Last updated record: {}".format(
@@ -290,10 +291,38 @@ def sync_disputes():
     singer.write_state(STATE)
 
 
-def do_sync():
+def sync_merchant_accounts(gateway):
+    # result = gateway.merchant_account.all()
+    #
+    # for merchant_account in result.merchant_accounts:
+    #     print(merchant_account.currency_iso_code)
+    schema = load_schema("merchant_accounts")
+
+    singer.write_schema("merchant_accounts", schema, ["id"])
+
+    data = gateway.merchant_account.all()
+
+    time_extracted = utils.now()
+    
+    row_written_count = 0
+
+    for merchant_account in data.merchant_accounts:
+        transformed = transform_row(merchant_account, schema)
+        singer.write_record("merchant_accounts", transformed,
+                            time_extracted=time_extracted)
+        row_written_count += 1
+
+    if row_written_count > 0:
+        logger.info("merchant_accounts: Written {} records".format(
+            row_written_count
+        ))
+
+
+def do_sync(gateway):
     logger.info("Starting sync")
-    sync_transactions()
-    sync_disputes()
+    # sync_transactions()
+    # sync_disputes()
+    sync_merchant_accounts(gateway)
     logger.info("Sync completed")
 
 
@@ -312,13 +341,23 @@ def main():
 
     braintree.Configuration.configure(environment, **config)
 
+    gateway = braintree.BraintreeGateway(
+        braintree.Configuration(
+            getattr(
+                braintree.Environment, config.pop("environment", "Production")
+            ),
+            **config
+        )
+    )
+
     if args.state:
         STATE.update(args.state)
 
     try:
-        do_sync()
+        logger.info(type(gateway))
+        do_sync(gateway)
     except braintree.exceptions.authentication_error.AuthenticationError:
-        logger.critical('Authentication error occured. '
+        logger.critical('Authentication error occurred. '
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
 
