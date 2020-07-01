@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
-from datetime import datetime, timedelta
 import os
-import pytz
-
+from datetime import datetime, timedelta
 
 import braintree
+import pytz
+
 import singer
-
 from singer import utils
-from .transform import transform_row
 
+from .transform import transform_row
 
 CONFIG = {}
 STATE = {}
@@ -63,7 +62,7 @@ def daterange(start_date, end_date):
     start_date = to_utc(
         datetime.combine(
             start_date.date(),
-            datetime.min.time()  # set to the 0:00 on the day of the start date
+            datetime.min.time(),  # set to the 0:00 on the day of the start date
         )
     )
 
@@ -73,17 +72,44 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n), start_date + timedelta(n + 1)
 
 
-def sync_transactions():
+def sync_merchant_accounts(gateway):
+    schema = load_schema("merchant_accounts")
+
+    singer.write_schema("merchant_accounts", schema, ["id"])
+
+    data = gateway.merchant_account.all()
+
+    time_extracted = utils.now()
+
+    row_written_count = 0
+
+    for merchant_account in data.merchant_accounts:
+        transformed = transform_row(merchant_account, schema)
+        singer.write_record(
+            "merchant_accounts", transformed, time_extracted=time_extracted
+        )
+        row_written_count += 1
+
+    if row_written_count > 0:
+        logger.info("merchant_accounts: Written {} records".format(row_written_count))
+
+
+def sync_transactions(gateway):
     schema = load_schema("transactions")
 
-    singer.write_schema("transactions", schema, ["id"],
-                        bookmark_properties=['created_at'])
+    singer.write_schema(
+        "transactions", schema, ["id"], bookmark_properties=["created_at"]
+    )
 
-    latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
+    latest_updated_at = utils.strptime_to_utc(
+        STATE.get("latest_updated_at", DEFAULT_TIMESTAMP)
+    )
 
     run_maximum_updated_at = latest_updated_at
 
-    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursment_date', DEFAULT_TIMESTAMP))
+    latest_disbursement_date = utils.strptime_to_utc(
+        STATE.get("latest_disbursment_date", DEFAULT_TIMESTAMP)
+    )
 
     run_maximum_disbursement_date = latest_disbursement_date
 
@@ -91,19 +117,17 @@ def sync_transactions():
 
     period_start = latest_start_date - TRAILING_DAYS
 
-    # TODO: Change this back, altered for testing
-    # period_end = utils.now()
-    period_end = to_utc(datetime(2019, 2, 1, 0, 0, 0, 0))
+    period_end = utils.now()
 
     logger.info("transactions: Syncing from {}".format(period_start))
 
-    logger.info("transactions: latest_updated_at from {}, disbursement_date from {}".format(
-        latest_updated_at, latest_disbursement_date
-    ))
+    logger.info(
+        "transactions: latest_updated_at from {}, disbursement_date from {}".format(
+            latest_updated_at, latest_disbursement_date
+        )
+    )
 
-    logger.info("transactions: latest_start_date from {}".format(
-        latest_start_date
-    ))
+    logger.info("transactions: latest_start_date from {}".format(latest_start_date))
 
     # increment through each day (20k results max from api)
     for start, end in daterange(period_start, period_end):
@@ -111,19 +135,22 @@ def sync_transactions():
         end = min(end, period_end)
 
         data = braintree.Transaction.search(
-            braintree.TransactionSearch.created_at.between(start, end))
+            braintree.TransactionSearch.created_at.between(start, end)
+        )
         time_extracted = utils.now()
 
-        logger.info("transactions: Fetched {} records from {} - {}".format(
-            data.maximum_size, start, end
-        ))
+        logger.info(
+            "transactions: Fetched {} records from {} - {}".format(
+                data.maximum_size, start, end
+            )
+        )
 
         row_written_count = 0
         row_skipped_count = 0
 
         for row in data:
             # Ensure updated_at consistency
-            if not getattr(row, 'updated_at'):
+            if not getattr(row, "updated_at"):
                 row.updated_at = row.created_at
 
             transformed = transform_row(row, schema)
@@ -139,9 +166,11 @@ def sync_transactions():
                 if row.disbursement_details.disbursement_date is None:
                     row.disbursement_details.disbursement_date = datetime.min
 
-                disbursement_date = to_utc(datetime.combine(
-                    row.disbursement_details.disbursement_date,
-                    datetime.min.time()))
+                disbursement_date = to_utc(
+                    datetime.combine(
+                        row.disbursement_details.disbursement_date, datetime.min.time()
+                    )
+                )
 
             # Is this more recent than our past stored value of update_at?
             # Is this more recent than our past stored value of disbursement_date?
@@ -150,217 +179,147 @@ def sync_transactions():
             # at the same time
             # Update our high water mark for updated_at and disbursement_date
             # in this run
-            if (
-                updated_at >= latest_updated_at
-            ) or (
+            if (updated_at >= latest_updated_at) or (
                 disbursement_date >= latest_disbursement_date
             ):
-
                 if updated_at > run_maximum_updated_at:
                     run_maximum_updated_at = updated_at
 
                 if disbursement_date > run_maximum_disbursement_date:
                     run_maximum_disbursement_date = disbursement_date
 
-                singer.write_record("transactions", transformed,
-                                    time_extracted=time_extracted)
+                singer.write_record(
+                    "transactions", transformed, time_extracted=time_extracted
+                )
                 row_written_count += 1
+                if row.line_items:
+                    logger.info(
+                        "transactions: Fetching line_items for transaction {}".format(
+                            row.id
+                        )
+                    )
+                    _sync_transaction_line_items(gateway=gateway, transaction_id=row.id)
+                if row.disputes:
+                    logger.info(
+                        "transactions: Fetching disputes for transaction {}".format(
+                            row.id
+                        )
+                    )
+                    _sync_disputes(gateway=gateway, transaction_id=row.id)
 
             else:
-
                 row_skipped_count += 1
 
         if row_written_count > 0:
-            logger.info("disputes: Written {} records from {} - {}".format(
-                row_written_count, start, end
-            ))
+            logger.info(
+                "transactions: Written {} records from {} - {}".format(
+                    row_written_count, start, end
+                )
+            )
         if row_skipped_count > 0:
-            logger.info("disputes: Skipped {} records from {} - {}".format(
-                row_skipped_count, start, end
-            ))
+            logger.info(
+                "transactions: Skipped {} records from {} - {}".format(
+                    row_skipped_count, start, end
+                )
+            )
 
     # End day loop
-    logger.info("transactions: Complete. Last updated record: {}".format(
-        run_maximum_updated_at
-    ))
+    logger.info(
+        "transactions: Complete. Last updated record: {}".format(run_maximum_updated_at)
+    )
 
-    logger.info("transactions: Complete. Last disbursement date: {}".format(
-        run_maximum_disbursement_date
-    ))
+    logger.info(
+        "transactions: Complete. Last disbursement date: {}".format(
+            run_maximum_disbursement_date
+        )
+    )
 
     latest_updated_at = run_maximum_updated_at
 
     latest_disbursement_date = run_maximum_disbursement_date
 
-    STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
+    STATE["latest_updated_at"] = utils.strftime(latest_updated_at)
 
-    STATE['latest_disbursement_date'] = utils.strftime(
-        latest_disbursement_date)
+    STATE["latest_disbursement_date"] = utils.strftime(latest_disbursement_date)
 
     utils.update_state(STATE, "transactions", utils.strftime(end))
 
     singer.write_state(STATE)
 
 
-def sync_disputes():
-    schema = load_schema("disputes")
-
-    singer.write_schema("disputes", schema, ["id"],
-                        bookmark_properties=['created_at'])
-
-    latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
-
-    run_maximum_updated_at = latest_updated_at
-
-    latest_start_date = utils.strptime_to_utc(get_start("disputes"))
-
-    period_start = latest_start_date - TRAILING_DAYS
-
-    # TODO: Change this back, altered for testing
-    # period_end = utils.now()
-    period_end = to_utc(datetime(2019, 2, 1, 0, 0, 0, 0))
-
-    logger.info("disputes: Syncing from {}".format(period_start))
-
-    logger.info("disputes: latest_updated_at from {}".format(latest_updated_at))
-
-    logger.info("disputes: latest_start_date from {}".format(
-        latest_start_date
-    ))
-
-    # increment through each day (20k results max from api)
-    for start, end in daterange(period_start, period_end):
-
-        end = min(end, period_end)
-
-        data = braintree.Dispute.search(
-            braintree.DisputeSearch.received_date.between(start, end))
-        time_extracted = utils.now()
-        logger.info("disputes: Fetched records from {} - {}".format(start, end))
-
-        row_written_count = 0
-        row_skipped_count = 0
-
-        for row in data.disputes.items:
-            # Ensure updated_at consistency
-            if not getattr(row, 'updated_at'):
-                row.updated_at = row.created_at
-
-            transformed = transform_row(row, schema)
-            if isinstance(row.updated_at, str):
-                row.updated_at = datetime.strptime(row.updated_at, '%Y-%m-%dT%H:%M:%SZ')
-                
-            updated_at = to_utc(row.updated_at)
-
-            # Is this more recent than our past stored value of update_at?
-            # Use >= for updated_at due to non monotonic updated_at values
-            # Update our high water mark for updated_at in this run
-            if (
-                updated_at >= latest_updated_at
-            ):
-
-                if updated_at > run_maximum_updated_at:
-                    run_maximum_updated_at = updated_at
-
-                singer.write_record("disputes", transformed,
-                                    time_extracted=time_extracted)
-                row_written_count += 1
-
-            else:
-                row_skipped_count += 1
-        if row_written_count > 0:
-            logger.info("disputes: Written {} records from {} - {}".format(
-                row_written_count, start, end
-            ))
-        if row_skipped_count > 0:
-            logger.info("disputes: Skipped {} records from {} - {}".format(
-                row_skipped_count, start, end
-            ))
-
-    # End day loop
-    logger.info("disputes: Complete. Last updated record: {}".format(
-        run_maximum_updated_at
-    ))
-
-    latest_updated_at = run_maximum_updated_at
-
-    STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
-
-    utils.update_state(STATE, "disputes", utils.strftime(end))
-
-    singer.write_state(STATE)
-
-
-def sync_merchant_accounts(gateway):
-    # result = gateway.merchant_account.all()
-    #
-    # for merchant_account in result.merchant_accounts:
-    #     print(merchant_account.currency_iso_code)
-    schema = load_schema("merchant_accounts")
-
-    singer.write_schema("merchant_accounts", schema, ["id"])
-
-    data = gateway.merchant_account.all()
-
+def _sync_transaction_line_items(gateway, transaction_id):
+    schema = load_schema("transaction_line_items")
+    transaction_line_items = gateway.transaction_line_item.find_all(transaction_id)
     time_extracted = utils.now()
-    
     row_written_count = 0
-
-    for merchant_account in data.merchant_accounts:
-        transformed = transform_row(merchant_account, schema)
-        singer.write_record("merchant_accounts", transformed,
-                            time_extracted=time_extracted)
+    for transaction_line_item in transaction_line_items:
+        transaction_line_item.transaction_id = transaction_id
+        transformed = transform_row(transaction_line_item, schema)
+        singer.write_record(
+            "transaction_line_items", transformed, time_extracted=time_extracted
+        )
         row_written_count += 1
 
     if row_written_count > 0:
-        logger.info("merchant_accounts: Written {} records".format(
-            row_written_count
-        ))
+        logger.info(
+            "transaction_line_items: Written {} records".format(row_written_count)
+        )
+
+
+def _sync_disputes(gateway, transaction_id):
+    schema = load_schema("disputes")
+
+    disputes = gateway.dispute.search(
+        [braintree.DisputeSearch.transaction_id == transaction_id]
+    )
+
+    time_extracted = utils.now()
+    row_written_count = 0
+    for dispute in disputes.disputes.items:
+        dispute.transaction_id = transaction_id
+        transformed = transform_row(dispute, schema)
+        singer.write_record("disputes", transformed, time_extracted=time_extracted)
+        row_written_count += 1
+
+    if row_written_count > 0:
+        logger.info("disputes: Written {} records".format(row_written_count))
 
 
 def do_sync(gateway):
     logger.info("Starting sync")
-    # sync_transactions()
-    # sync_disputes()
     sync_merchant_accounts(gateway)
+    sync_transactions(gateway)
     logger.info("Sync completed")
 
 
 @utils.handle_top_exception(logger)
 def main():
-    args = utils.parse_args(
-        ["merchant_id", "public_key", "private_key", "start_date"]
-    )
+    args = utils.parse_args(["merchant_id", "public_key", "private_key", "start_date"])
     config = args.config
 
     environment = getattr(
         braintree.Environment, config.pop("environment", "Production")
     )
 
-    CONFIG['start_date'] = config.pop('start_date')
+    CONFIG["start_date"] = config.pop("start_date")
 
     braintree.Configuration.configure(environment, **config)
 
-    gateway = braintree.BraintreeGateway(
-        braintree.Configuration(
-            getattr(
-                braintree.Environment, config.pop("environment", "Production")
-            ),
-            **config
-        )
-    )
+    gateway = braintree.BraintreeGateway(braintree.Configuration(environment, **config))
 
     if args.state:
         STATE.update(args.state)
 
     try:
-        logger.info(type(gateway))
         do_sync(gateway)
     except braintree.exceptions.authentication_error.AuthenticationError:
-        logger.critical('Authentication error occurred. '
-                        'Please check your merchant_id, public_key, and '
-                        'private_key for errors', exc_info=True)
+        logger.critical(
+            "Authentication error occurred. "
+            "Please check your merchant_id, public_key, and "
+            "private_key for errors",
+            exc_info=True,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

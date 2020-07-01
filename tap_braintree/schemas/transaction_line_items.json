@@ -1,0 +1,47 @@
+{
+	"type": "object",
+	"properties": {
+		"transaction_id": {
+			"type": "string"
+		},
+		"commodity_code": {
+			"type": ["null", "string"]
+		},
+		"description": {
+			"type": ["null", "string"]
+		},
+		"discount_amount": {
+			"type": ["null", "number"]
+		},
+		"kind": {
+			"type": ["null", "string"]
+		},
+		"name": {
+			"type": ["null", "string"]
+		},
+		"product_code": {
+			"type": ["null", "string"]
+		},
+		"quantity": {
+			"type": ["null", "number"]
+		},
+		"tax_amount": {
+			"type": ["null", "number"]
+		},
+		"total_amount": {
+			"type": ["null", "number"]
+		},
+		"unit_amount": {
+			"type": ["null", "number"]
+		},
+		"unit_of_measure": {
+			"type": ["null", "string"]
+		},
+		"unit_tax_amount": {
+			"type": ["null", "number"]
+		},
+		"url": {
+			"type": ["null", "string"]
+		}
+	}
+}
