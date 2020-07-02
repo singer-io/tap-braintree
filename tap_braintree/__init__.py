@@ -13,7 +13,7 @@ from .transform import transform_row
 
 CONFIG = {}
 STATE = {}
-TRAILING_DAYS = timedelta(days=30)
+TRAILING_DAYS = timedelta(days=2)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 
 logger = singer.get_logger()
@@ -93,62 +93,58 @@ def sync_merchant_accounts(gateway):
     if row_written_count > 0:
         logger.info("merchant_accounts: Written {} records".format(row_written_count))
 
+    return data.merchant_accounts
 
-def sync_transactions(gateway):
+
+def sync_transactions(merchant_accounts, gateway):
     schema = load_schema("transactions")
 
     singer.write_schema(
         "transactions", schema, ["id"], bookmark_properties=["created_at"]
     )
 
-    latest_updated_at = utils.strptime_to_utc(
-        STATE.get("latest_updated_at", DEFAULT_TIMESTAMP)
-    )
+    latest_updated_at = utils.strptime_to_utc(get_start("transactions"))
 
     run_maximum_updated_at = latest_updated_at
 
-    latest_disbursement_date = utils.strptime_to_utc(
-        STATE.get("latest_disbursment_date", DEFAULT_TIMESTAMP)
-    )
-
-    run_maximum_disbursement_date = latest_disbursement_date
-
-    latest_start_date = utils.strptime_to_utc(get_start("transactions"))
-
-    period_start = latest_start_date - TRAILING_DAYS
-
-    period_end = utils.now()
+    period_start = latest_updated_at - TRAILING_DAYS
 
     logger.info("transactions: Syncing from {}".format(period_start))
 
-    logger.info(
-        "transactions: latest_updated_at from {}, disbursement_date from {}".format(
-            latest_updated_at, latest_disbursement_date
+    logger.info("transactions: latest_updated_at from {}".format(latest_updated_at))
+
+    for merchant in merchant_accounts:
+        logger.info(
+            "transactions: Fetching transactions for account {}".format(merchant.id)
         )
-    )
 
-    logger.info("transactions: latest_start_date from {}".format(latest_start_date))
-
-    # increment through each day (20k results max from api)
-    for start, end in daterange(period_start, period_end):
-
-        end = min(end, period_end)
-
-        data = gateway.transaction.search(
-            braintree.TransactionSearch.created_at.between(start, end)
-        )
         time_extracted = utils.now()
+        data = gateway.transaction.search(
+            braintree.TransactionSearch.merchant_account_id == merchant.id
+        )
 
         logger.info(
-            "transactions: Fetched {} records from {} - {}".format(
-                data.maximum_size, start, end
+            "transactions: Fetched {} records for account {}".format(
+                data.maximum_size, merchant.id
+            )
+        )
+
+        rows_to_sync = [
+            row
+            for row in data.items
+            if row.updated_at.replace(tzinfo=pytz.UTC) >= period_start
+        ]
+
+        logger.info(
+            "transactions: {} records to sync for account {}".format(
+                len(rows_to_sync), merchant.id
             )
         )
 
         row_written_count = 0
-        row_skipped_count = 0
+        row_skipped_count = data.maximum_size - len(rows_to_sync)
 
-        for row in data.items:
+        for row in rows_to_sync:
             # Ensure updated_at consistency
             if not getattr(row, "updated_at"):
                 row.updated_at = row.created_at
@@ -156,63 +152,32 @@ def sync_transactions(gateway):
             transformed = transform_row(row, schema)
             updated_at = to_utc(row.updated_at)
 
-            # if disbursement is successful, get disbursement date
-            # set disbursement datetime to min if not found
+            # Is this the most recently updated transaction?
+            # if so, update run_maximum_updated_at for STATE
+            if updated_at > run_maximum_updated_at:
+                run_maximum_updated_at = updated_at
 
-            if row.disbursement_details is None:
-                disbursement_date = datetime.min
+            singer.write_record(
+                "transactions", transformed, time_extracted=time_extracted
+            )
+            row_written_count += 1
 
-            else:
-                if row.disbursement_details.disbursement_date is None:
-                    row.disbursement_details.disbursement_date = datetime.min
-
-                disbursement_date = to_utc(
-                    datetime.combine(
-                        row.disbursement_details.disbursement_date, datetime.min.time()
-                    )
+            if row.disputes:
+                logger.info(
+                    "transactions: Fetching disputes for transaction {}".format(row.id)
                 )
-
-            # Is this more recent than our past stored value of update_at?
-            # Is this more recent than our past stored value of disbursement_date?
-            # Use >= for updated_at due to non monotonic updated_at values
-            # Use > for disbursement_date - confirming all transactions disbursed
-            # at the same time
-            # Update our high water mark for updated_at and disbursement_date
-            # in this run
-            if (updated_at >= latest_updated_at) or (
-                disbursement_date >= latest_disbursement_date
-            ):
-                if updated_at > run_maximum_updated_at:
-                    run_maximum_updated_at = updated_at
-
-                if disbursement_date > run_maximum_disbursement_date:
-                    run_maximum_disbursement_date = disbursement_date
-
-                singer.write_record(
-                    "transactions", transformed, time_extracted=time_extracted
-                )
-                row_written_count += 1
-                if row.disputes:
-                    logger.info(
-                        "transactions: Fetching disputes for transaction {}".format(
-                            row.id
-                        )
-                    )
-                    _sync_disputes(gateway=gateway, transaction_id=row.id)
-
-            else:
-                row_skipped_count += 1
+                _sync_disputes(gateway=gateway, transaction_id=row.id)
 
         if row_written_count:
             logger.info(
-                "transactions: Written {} records from {} - {}".format(
-                    row_written_count, start, end
+                "transactions: Written {} records for account {}".format(
+                    row_written_count, merchant.id
                 )
             )
         if row_skipped_count:
             logger.info(
-                "transactions: Skipped {} records from {} - {}".format(
-                    row_skipped_count, start, end
+                "transactions: Skipped {} records for account {}".format(
+                    row_skipped_count, merchant.id
                 )
             )
 
@@ -221,21 +186,9 @@ def sync_transactions(gateway):
         "transactions: Complete. Last updated record: {}".format(run_maximum_updated_at)
     )
 
-    logger.info(
-        "transactions: Complete. Last disbursement date: {}".format(
-            run_maximum_disbursement_date
-        )
-    )
-
     latest_updated_at = run_maximum_updated_at
 
-    latest_disbursement_date = run_maximum_disbursement_date
-
-    STATE["latest_updated_at"] = utils.strftime(latest_updated_at)
-
-    STATE["latest_disbursement_date"] = utils.strftime(latest_disbursement_date)
-
-    utils.update_state(STATE, "transactions", utils.strftime(end))
+    utils.update_state(STATE, "transactions", latest_updated_at)
 
     singer.write_state(STATE)
 
@@ -262,8 +215,8 @@ def _sync_disputes(gateway, transaction_id):
 
 def do_sync(gateway):
     logger.info("Starting sync")
-    sync_merchant_accounts(gateway)
-    sync_transactions(gateway)
+    merchants = sync_merchant_accounts(gateway)
+    sync_transactions(merchant_accounts=merchants, gateway=gateway)
     logger.info("Sync completed")
 
 
