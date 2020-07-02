@@ -192,13 +192,6 @@ def sync_transactions(gateway):
                     "transactions", transformed, time_extracted=time_extracted
                 )
                 row_written_count += 1
-                if row.line_items:
-                    logger.info(
-                        "transactions: Fetching line_items for transaction {}".format(
-                            row.id
-                        )
-                    )
-                    _sync_transaction_line_items(gateway=gateway, transaction_id=row.id)
                 if row.disputes:
                     logger.info(
                         "transactions: Fetching disputes for transaction {}".format(
@@ -210,13 +203,13 @@ def sync_transactions(gateway):
             else:
                 row_skipped_count += 1
 
-        if row_written_count > 0:
+        if row_written_count:
             logger.info(
                 "transactions: Written {} records from {} - {}".format(
                     row_written_count, start, end
                 )
             )
-        if row_skipped_count > 0:
+        if row_skipped_count:
             logger.info(
                 "transactions: Skipped {} records from {} - {}".format(
                     row_skipped_count, start, end
@@ -247,27 +240,9 @@ def sync_transactions(gateway):
     singer.write_state(STATE)
 
 
-def _sync_transaction_line_items(gateway, transaction_id):
-    schema = load_schema("transaction_line_items")
-    transaction_line_items = gateway.transaction_line_item.find_all(transaction_id)
-    time_extracted = utils.now()
-    row_written_count = 0
-    for transaction_line_item in transaction_line_items:
-        transaction_line_item.transaction_id = transaction_id
-        transformed = transform_row(transaction_line_item, schema)
-        singer.write_record(
-            "transaction_line_items", transformed, time_extracted=time_extracted
-        )
-        row_written_count += 1
-
-    if row_written_count > 0:
-        logger.info(
-            "transaction_line_items: Written {} records".format(row_written_count)
-        )
-
-
 def _sync_disputes(gateway, transaction_id):
     schema = load_schema("disputes")
+    singer.write_schema("disputes", schema, ["id"])
 
     disputes = gateway.dispute.search(
         [braintree.DisputeSearch.transaction_id == transaction_id]
