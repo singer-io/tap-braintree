@@ -134,7 +134,7 @@ def sync_transactions(gateway):
 
         end = min(end, period_end)
 
-        data = braintree.Transaction.search(
+        data = gateway.transaction.search(
             braintree.TransactionSearch.created_at.between(start, end)
         )
         time_extracted = utils.now()
@@ -148,7 +148,7 @@ def sync_transactions(gateway):
         row_written_count = 0
         row_skipped_count = 0
 
-        for row in data:
+        for row in data.items:
             # Ensure updated_at consistency
             if not getattr(row, "updated_at"):
                 row.updated_at = row.created_at
@@ -302,8 +302,6 @@ def main():
     )
 
     CONFIG["start_date"] = config.pop("start_date")
-
-    braintree.Configuration.configure(environment, **config)
 
     gateway = braintree.BraintreeGateway(braintree.Configuration(environment, **config))
 
