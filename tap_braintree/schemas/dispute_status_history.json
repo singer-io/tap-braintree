@@ -1,0 +1,41 @@
+{
+	"type": "object",
+	"properties": {
+		"dispute_id": {
+			"type": ["string"]
+		},
+		"disbursement_date": {
+			"anyOf": [{
+					"type": "string",
+					"format": "date-time"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"effective_date": {
+			"anyOf": [{
+					"type": "string",
+					"format": "date-time"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"status": {
+			"type": ["null", "string"]
+		},
+		"timestamp": {
+			"anyOf": [{
+					"type": "string",
+					"format": "date-time"
+				},
+				{
+					"type": "null"
+				}
+			]
+		}
+	}
+}

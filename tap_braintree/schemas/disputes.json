@@ -4,6 +4,9 @@
 		"id": {
 			"type": "string"
 		},
+		"transaction_id": {
+			"type": "string"
+		},
 		"amount_disputed": {
 			"type": ["null", "number"]
 		},
@@ -97,67 +100,6 @@
 		},
 		"status": {
 			"type": ["null", "string"]
-		},
-		"status_history": {
-			"anyOf": [{
-					"type": "object",
-					"properties": {
-						"disbursement_date": {
-							"anyOf": [{
-									"type": "string",
-									"format": "date-time"
-								},
-								{
-									"type": "null"
-								}
-							]
-						},
-						"effective_date": {
-							"anyOf": [{
-									"type": "string",
-									"format": "date-time"
-								},
-								{
-									"type": "null"
-								}
-							]
-						},
-						"status": {
-							"type": ["null", "string"]
-						},
-						"timestamp": {
-							"anyOf": [{
-									"type": "string",
-									"format": "date-time"
-								},
-								{
-									"type": "null"
-								}
-							]
-						}
-					}
-				},
-				{
-					"type": "null"
-				}
-			]
-		},
-		"transaction": {
-			"anyOf": [{
-					"type": "object",
-					"properties": {
-						"id": {
-							"type": ["null", "string"]
-						},
-						"order_id": {
-							"type": ["null", "string"]
-						}
-					}
-				},
-				{
-					"type": "null"
-				}
-			]
 		},
 		"updated_at": {
 			"anyOf": [{

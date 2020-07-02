@@ -1,0 +1,30 @@
+{
+	"type": "object",
+	"properties": {
+		"transaction_id": {
+			"type": ["string"]
+		},
+		"amount": {
+			"type": ["null", "number"]
+		},
+		"status": {
+			"type": ["null", "string"]
+		},
+		"timestamp": {
+			"anyOf": [{
+					"type": "string",
+					"format": "date-time"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"transaction_source": {
+			"type": ["null", "string"]
+		},
+		"user": {
+			"type": ["null", "string"]
+		}
+	}
+}
