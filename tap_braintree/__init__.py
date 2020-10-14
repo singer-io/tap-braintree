@@ -3,14 +3,14 @@
 from datetime import datetime, timedelta
 import os
 import pytz
-
+import json
+from tap_braintree.context import Context
 
 import braintree
 import singer
-
+from singer import metadata
 from singer import utils
 from .transform import transform_row
-
 
 CONFIG = {}
 STATE = {}
@@ -18,6 +18,65 @@ TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 
 logger = singer.get_logger()
+
+
+def load_schemas():
+    schemas = {}
+
+    # This schema represents many of the currency values as JSON schema
+    # 'number's, which may result in lost precision.
+    for filename in os.listdir(get_abs_path('schemas')):
+        path = get_abs_path('schemas') + '/' + filename
+        schema_name = filename.replace('.json', '')
+        with open(path) as file:
+            schemas[schema_name] = json.load(file)
+    return schemas
+
+
+def load_schema_references():
+    shared_schema_file = "definitions.json"
+    shared_schema_path = get_abs_path('definitions/')
+
+    refs = {}
+    with open(os.path.join(shared_schema_path, shared_schema_file)) as data_file:
+        refs[shared_schema_file] = json.load(data_file)
+    return refs
+
+
+def get_discovery_metadata(stream, schema):
+    mdata = metadata.new()
+    mdata = metadata.write(mdata, (), 'table-key-properties', stream.key_properties)
+    mdata = metadata.write(mdata, (), 'forced-replication-method', stream.replication_method)
+
+    if stream.replication_key:
+        mdata = metadata.write(mdata, (), 'valid-replication-keys', [stream.replication_key])
+
+    for field_name in schema['properties'].keys():
+        if field_name in stream.key_properties or field_name == stream.replication_key:
+            mdata = metadata.write(mdata, ('properties', field_name), 'inclusion', 'automatic')
+        else:
+            mdata = metadata.write(mdata, ('properties', field_name), 'inclusion', 'available')
+
+    return metadata.to_list(mdata)
+
+
+def discover():
+    raw_schemas = load_schemas()
+    streams = []
+
+    refs = load_schema_references()
+    for schema_name, schema in raw_schemas.items():
+        #TODO: do as spotify with context streams
+
+        # create and add catalog entry
+        catalog_entry = {
+            'stream': schema_name,
+            'tap_stream_id': schema_name,
+            'schema': singer.resolve_schema_references(schema, refs),
+        }
+        streams.append(catalog_entry)
+
+    return {'streams': streams}
 
 
 def get_abs_path(path):
@@ -149,9 +208,9 @@ def sync_transactions():
             # Update our high water mark for updated_at and disbursement_date
             # in this run
             if (
-                updated_at >= latest_updated_at
+                    updated_at >= latest_updated_at
             ) or (
-                disbursement_date >= latest_disbursement_date
+                    disbursement_date >= latest_disbursement_date
             ):
 
                 if updated_at > run_maximum_updated_at:
@@ -223,12 +282,16 @@ def main():
     if args.state:
         STATE.update(args.state)
 
-    try:
-        do_sync()
-    except braintree.exceptions.authentication_error.AuthenticationError:
-        logger.critical('Authentication error occured. '
-                        'Please check your merchant_id, public_key, and '
-                        'private_key for errors', exc_info=True)
+    if args.discover:
+        catalog = discover()
+        print(json.dumps(catalog, indent=2))
+    else:
+        try:
+            do_sync()
+        except braintree.exceptions.authentication_error.AuthenticationError:
+            logger.critical('Authentication error occured. '
+                            'Please check your merchant_id, public_key, and '
+                            'private_key for errors', exc_info=True)
 
 
 if __name__ == '__main__':
