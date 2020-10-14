@@ -12,6 +12,8 @@ from singer import metadata
 from singer import utils
 from .transform import transform_row
 
+import tap_braintree.streams  # Load stream objects into Context
+
 CONFIG = {}
 STATE = {}
 TRAILING_DAYS = timedelta(days=30)
@@ -66,13 +68,20 @@ def discover():
 
     refs = load_schema_references()
     for schema_name, schema in raw_schemas.items():
-        #TODO: do as spotify with context streams
+        if schema_name not in Context.stream_objects:
+            continue
+
+        stream = Context.stream_objects[schema_name]()
 
         # create and add catalog entry
         catalog_entry = {
             'stream': schema_name,
             'tap_stream_id': schema_name,
             'schema': singer.resolve_schema_references(schema, refs),
+            'metadata': get_discovery_metadata(stream, schema),
+            'key_properties': stream.key_properties,
+            'replication_key': stream.replication_key,
+            'replication_method': stream.replication_method
         }
         streams.append(catalog_entry)
 
