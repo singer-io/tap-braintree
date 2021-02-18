@@ -134,7 +134,7 @@ def sync_transactions():
                 if not getattr(subscription, 'updated_at'):
                     subscription.updated_at = subscription.created_at
 
-                sub_transformed = transform_row(subscription, schema)
+                sub_transformed = transform_row(subscription, subs_schema)
 
                 singer.write_record("subscriptions", sub_transformed,
                                     time_extracted=time_extracted)
