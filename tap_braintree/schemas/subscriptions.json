@@ -24,17 +24,27 @@
         "number"
       ]
     },
-    "billing_period_end_date": {
-      "type": [
-        "null",
-        "date-time"
-      ]
-    },
     "billing_period_start_date": {
-      "type": [
-        "null",
-        "date-time"
-      ]
+        "anyOf": [
+            {
+                "type": "string",
+                "format": "date-time"
+            },
+            {
+                "type": "null"
+            }
+        ]
+    },
+    "billing_period_end_date": {
+        "anyOf": [
+            {
+                "type": "string",
+                "format": "date-time"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "current_billing_cycle": {
       "type": [
@@ -61,10 +71,15 @@
       ]
     },
     "first_billing_date": {
-      "type": [
-        "null",
-        "date-time"
-      ]
+        "anyOf": [
+            {
+                "type": "string",
+                "format": "date-time"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "merchant_account_id": {
       "type": [
@@ -85,10 +100,15 @@
       ]
     },
     "next_billing_date": {
-      "type": [
-        "null",
-        "date-time"
-      ]
+        "anyOf": [
+            {
+                "type": "string",
+                "format": "date-time"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "next_billing_period_amount": {
       "type": [
@@ -103,10 +123,15 @@
       ]
     },
     "paid_through_date": {
-      "type": [
-        "null",
-        "date-time"
-      ]
+        "anyOf": [
+            {
+                "type": "string",
+                "format": "date-time"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "payment_method_token": {
       "type": [
