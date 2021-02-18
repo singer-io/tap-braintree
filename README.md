@@ -6,6 +6,8 @@ This tap:
 - Pulls raw data from Braintree's REST API
 - Extracts the following resources from Braintree
   - Transactions
+  - Subscriptions
+    - Status History
 - Outputs the schema for each resource
 - Incrementally pulls data based on the input state
 
