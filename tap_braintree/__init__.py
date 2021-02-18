@@ -3,19 +3,18 @@
 from datetime import datetime, timedelta
 import os
 import pytz
-
-
 import braintree
 import singer
-
 from singer import utils
 from .transform import transform_row
 
 
 CONFIG = {}
 STATE = {}
+# TODO make this a param that can be passed
 TRAILING_DAYS = timedelta(days=30)
-DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
+# braintree was founded in 2007
+DEFAULT_TIMESTAMP = "2007-01-01T00:00:00Z"
 
 logger = singer.get_logger()
 
@@ -75,9 +74,14 @@ def daterange(start_date, end_date):
 
 def sync_transactions():
     schema = load_schema("transactions")
-
     singer.write_schema("transactions", schema, ["id"],
                         bookmark_properties=['created_at'])
+    subs_schema = load_schema("subscriptions")
+    singer.write_schema("subscriptions", subs_schema, ["id"],
+                        bookmark_properties=['created_at'])
+    history_schema = load_schema("subscription_status_history")
+    singer.write_schema("subscription_status_history", history_schema, ["subscription_id", "timestamp"],
+                        bookmark_properties=['timestamp'])
 
     latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
 
@@ -118,8 +122,31 @@ def sync_transactions():
 
         row_written_count = 0
         row_skipped_count = 0
+        subscription_count = 0
 
         for row in data:
+            # get subscription data
+            if getattr(row, 'subscription_id'):
+                subscription_id = getattr(row, 'subscription_id')
+                subscription = braintree.Subscription.find(subscription_id)
+
+                # Ensure updated_at consistency
+                if not getattr(subscription, 'updated_at'):
+                    subscription.updated_at = subscription.created_at
+
+                sub_transformed = transform_row(subscription, schema)
+
+                singer.write_record("subscriptions", sub_transformed,
+                                    time_extracted=time_extracted)
+                subscription_count += 1
+
+                if getattr(subscription, 'status_history'):
+                    for status_history in getattr(subscription, 'status_history'):
+                        history_transformed = transform_row(status_history, history_schema)
+                        history_transformed['subscription_id'] = subscription_id
+                        singer.write_record("subscription_status_history", history_transformed,
+                                            time_extracted=time_extracted)
+
             # Ensure updated_at consistency
             if not getattr(row, 'updated_at'):
                 row.updated_at = row.created_at
@@ -168,8 +195,8 @@ def sync_transactions():
 
                 row_skipped_count += 1
 
-        logger.info("transactions: Written {} records from {} - {}".format(
-            row_written_count, start, end
+        logger.info("transactions: Written {} records from {} - {} | subscriptions {} ".format(
+            row_written_count, start, end, subscription_count
         ))
 
         logger.info("transactions: Skipped {} records from {} - {}".format(
@@ -201,6 +228,8 @@ def sync_transactions():
 
 def do_sync():
     logger.info("Starting sync")
+    sync_transactions()
+    logger.info("Sync completed")
     sync_transactions()
     logger.info("Sync completed")
 

@@ -1,0 +1,154 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "balance": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "billing_day_of_month": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "billing_period_end_date": {
+      "type": [
+        "null",
+        "date-time"
+      ]
+    },
+    "billing_period_start_date": {
+      "type": [
+        "null",
+        "date-time"
+      ]
+    },
+    "current_billing_cycle": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "days_past_due": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "failure_count": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "first_billing_date": {
+      "type": [
+        "null",
+        "date-time"
+      ]
+    },
+    "merchant_account_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "never_expires": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "next_bill_amount": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "next_billing_date": {
+      "type": [
+        "null",
+        "date-time"
+      ]
+    },
+    "next_billing_period_amount": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "number_of_billing_cycles": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "paid_through_date": {
+      "type": [
+        "null",
+        "date-time"
+      ]
+    },
+    "payment_method_token": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "plan_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "price": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "trial_duration": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "trial_duration_unit": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "trial_period": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    }
+  }
+}
