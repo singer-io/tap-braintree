@@ -76,12 +76,6 @@ def sync_transactions():
     schema = load_schema("transactions")
     singer.write_schema("transactions", schema, ["id"],
                         bookmark_properties=['created_at'])
-    subs_schema = load_schema("subscriptions")
-    singer.write_schema("subscriptions", subs_schema, ["id"],
-                        bookmark_properties=['created_at'])
-    history_schema = load_schema("subscription_status_history")
-    singer.write_schema("subscription_status_history", history_schema, ["subscription_id", "timestamp"],
-                        bookmark_properties=['timestamp'])
 
     latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
 
@@ -125,27 +119,6 @@ def sync_transactions():
         subscription_count = 0
 
         for row in data:
-            # get subscription data
-            if getattr(row, 'subscription_id'):
-                subscription_id = getattr(row, 'subscription_id')
-                subscription = braintree.Subscription.find(subscription_id)
-
-                # Ensure updated_at consistency
-                if not getattr(subscription, 'updated_at'):
-                    subscription.updated_at = subscription.created_at
-
-                sub_transformed = transform_row(subscription, subs_schema)
-
-                singer.write_record("subscriptions", sub_transformed,
-                                    time_extracted=time_extracted)
-                subscription_count += 1
-
-                if getattr(subscription, 'status_history'):
-                    for status_history in getattr(subscription, 'status_history'):
-                        history_transformed = transform_row(status_history, history_schema)
-                        history_transformed['subscription_id'] = subscription_id
-                        singer.write_record("subscription_status_history", history_transformed,
-                                            time_extracted=time_extracted)
 
             # Ensure updated_at consistency
             if not getattr(row, 'updated_at'):
@@ -226,12 +199,60 @@ def sync_transactions():
     singer.write_state(STATE)
 
 
+def sync_subscriptions():
+    subs_schema = load_schema("subscriptions")
+    singer.write_schema("subscriptions", subs_schema, ["id"],
+                        bookmark_properties=['created_at'])
+    history_schema = load_schema("subscription_status_history")
+    singer.write_schema("subscription_status_history", history_schema, ["subscription_id", "timestamp"],
+                        bookmark_properties=['timestamp'])
+
+    period_end = utils.now()
+    period_start = utils.strptime_to_utc(get_start("subscriptions"))
+    logger.info("subscriptions: Syncing from {} to {}".format(period_start, period_end))
+
+    # increment through each day (10k results max from subscriptions api)
+    for start, end in daterange(period_start, period_end):
+
+        end = min(end, period_end)
+
+        data = braintree.Subscription.search(braintree.SubscriptionSearch.created_at.between(start, end))
+        time_extracted = utils.now()
+
+        logger.info("subscriptions: Fetched {} records from {} - {}".format(data.maximum_size, start, end))
+
+        row_written_count = 0
+
+        for row in data:
+
+            # Ensure updated_at consistency
+            if not getattr(row, 'updated_at'):
+                row.updated_at = row.created_at
+
+            if getattr(row, 'status_history'):
+                subscription_id = getattr(row, 'id')
+                for status_history in getattr(row, 'status_history'):
+                    history_transformed = transform_row(status_history, history_schema)
+                    history_transformed['subscription_id'] = subscription_id
+                    singer.write_record("subscription_status_history", history_transformed,
+                                        time_extracted=time_extracted)
+
+            sub_transformed = transform_row(row, subs_schema)
+
+            singer.write_record("subscriptions", sub_transformed,
+                                time_extracted=time_extracted)
+            row_written_count += 1
+
+        logger.info("subscriptions: Written {} records from {} - {}".format(row_written_count, start, end))
+    logger.info("subscriptions: Complete")
+
+
 def do_sync():
     logger.info("Starting sync")
     sync_transactions()
-    logger.info("Sync completed")
-    sync_transactions()
-    logger.info("Sync completed")
+    logger.info("Sync Transactions completed")
+    sync_subscriptions()
+    logger.info("Sync Subscriptions completed")
 
 
 @utils.handle_top_exception(logger)
