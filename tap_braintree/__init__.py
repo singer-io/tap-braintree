@@ -249,10 +249,10 @@ def sync_subscriptions():
 
 def do_sync():
     logger.info("Starting sync")
-    sync_transactions()
-    logger.info("Sync Transactions completed")
     sync_subscriptions()
     logger.info("Sync Subscriptions completed")
+    sync_transactions()
+    logger.info("Sync Transactions completed")
 
 
 @utils.handle_top_exception(logger)
