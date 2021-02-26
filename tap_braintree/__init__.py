@@ -116,7 +116,6 @@ def sync_transactions():
 
         row_written_count = 0
         row_skipped_count = 0
-        subscription_count = 0
 
         for row in data:
 
@@ -168,8 +167,8 @@ def sync_transactions():
 
                 row_skipped_count += 1
 
-        logger.info("transactions: Written {} records from {} - {} | subscriptions {} ".format(
-            row_written_count, start, end, subscription_count
+        logger.info("transactions: Written {} records from {} - {}".format(
+            row_written_count, start, end
         ))
 
         logger.info("transactions: Skipped {} records from {} - {}".format(
