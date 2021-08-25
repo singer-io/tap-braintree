@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "properties": {
+    "subscription_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "user": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "balance": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "currency_iso_code": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "plan_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "price": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "subscription_source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
