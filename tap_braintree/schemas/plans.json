@@ -1,0 +1,106 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "add_ons": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "$ref": "add_on.json#/"
+            }
+        },
+        "billing_day_of_month": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "billing_frequency": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "currency_iso_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "discounts": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "$ref": "discount.json#/"
+            }
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "number_of_billing_cycles": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "price": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "trial_duration": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "trial_duration_unit": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "trial_period": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        }
+    }
+}

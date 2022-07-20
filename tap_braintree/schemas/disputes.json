@@ -1,0 +1,278 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "amount_disputed": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "amount_won": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "case_number": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "charge_back_protection_level": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "currency_iso_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "evidence": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "comment": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "created_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "sent_to_processor_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "url": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "graphQL_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "kind": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "merchant_account_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "original_dispute_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "paypal_messages": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "message": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "send_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "sender": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "processor_comments": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reason": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reason_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reason_description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "received_date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reference_number": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reply_by_date": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status_history": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "disbursement_date": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "effective_date": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "timestamp": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                }
+            }
+        },
+        "transaction": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "amount": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "created_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "order_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "payment_instrument_subtype": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "purchase_order_number": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        }
+    }
+}

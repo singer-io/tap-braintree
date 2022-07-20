@@ -1,0 +1,216 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "business": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "address_details": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "properties": {
+                        "locality": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "postal_code": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "region": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "street_address": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "dba_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "legal_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "tax_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "currency_iso_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "default": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "funding": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "account_number_last4": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "descriptor": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "destination": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "email": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "mobile_phone": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "routing_number": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "individual": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "address_details": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "locality": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "postal_code": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "region": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "street_address": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "date_of_birth": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "email": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "first_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "last_name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "phone": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "ssn_last4": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "master_merchant_account": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}
