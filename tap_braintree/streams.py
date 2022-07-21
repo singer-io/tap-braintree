@@ -8,12 +8,15 @@ from .transform import transform_row
 
 TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
-logger = singer.get_logger()
 LOGGER = singer.get_logger()
 
 SDK_CALL = {
+    "add_ons": lambda gateway: gateway.add_on.all(),
     "customers": lambda gateway, start, end: gateway.customer.search(braintree.CustomerSearch.created_at.between(start, end)),
+    "discounts": lambda gateway: gateway.discount.all(),
     "disputes": lambda gateway, start, end: gateway.dispute.search(braintree.DisputeSearch.received_date.between(start, end)).disputes.items,
+    "merchant_accounts": lambda gateway: gateway.merchant_account.all().merchant_accounts,
+    "plans": lambda gateway: gateway.plan.all(),
     "settlement_batch_summary": lambda gateway, start, end: gateway.settlement_batch_summary.generate(start.strftime("%Y-%m-%d")).settlement_batch_summary.records,
     "subscriptions": lambda gateway, start, end: gateway.subscription.search(braintree.SubscriptionSearch.created_at.between(start, end)),
     "transactions": lambda gateway, start, end: gateway.transaction.search(braintree.TransactionSearch.created_at.between(start, end))
@@ -100,18 +103,19 @@ class Stream:
         for n in range(int((end_date - start_date).days)):
             yield start_date + timedelta(n), start_date + timedelta(n + 1)
     
-    def sync_without_window(self, data, config, schema, state, selected_streams, sync_streams):
+    def sync_without_window(self, gateway, config, schema, state, selected_streams, sync_streams):
         """
         Sync function for incremental stream without window logic
         """
+        data = SDK_CALL[self.name](gateway)
         time_extracted = utils.now()
         latest_start_date = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get(self.replication_keys, config['start_date']) )
 
         period_start = latest_start_date - TRAILING_DAYS
 
-        logger.info("{}: Syncing from {}".format(self.name, period_start))
+        LOGGER.info("{}: Syncing from {}".format(self.name, period_start))
         
-        logger.info("{}: latest_start_date from {}".format(self.name, latest_start_date))
+        LOGGER.info("{}: latest_start_date from {}".format(self.name, latest_start_date))
         
         row_written_count = 0
         
@@ -127,9 +131,9 @@ class Stream:
                 singer.write_record(self.name, transformed, time_extracted=time_extracted)
                 row_written_count += 1
                 
-        logger.info("{}: Written {} records from {} - {}".format(self.name, row_written_count, latest_start_date, time_extracted))
+        LOGGER.info("{}: Written {} records from {} - {}".format(self.name, row_written_count, latest_start_date, time_extracted))
         
-        logger.info("{}: Complete. Last updated record: {}".format(self.name, latest_updated_at))
+        LOGGER.info("{}: Complete. Last updated record: {}".format(self.name, latest_updated_at))
 
         state_value = {
             self.replication_keys: utils.strftime(latest_updated_at)
@@ -152,18 +156,18 @@ class Stream:
 
         period_end = utils.now()
 
-        logger.info("{}: Syncing from {}".format(self.name, period_start))
-        logger.info("{}: latest_start_date from {}".format(self.name, latest_start_date))
+        LOGGER.info("{}: Syncing from {}".format(self.name, period_start))
+        LOGGER.info("{}: latest_start_date from {}".format(self.name, latest_start_date))
         
         if has_updated_at:
             latest_updated_at = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get('latest_updated_at', DEFAULT_TIMESTAMP))
             run_maximum_updated_at = latest_updated_at
-            logger.info("{}: latest_updated_at from {}".format(self.name, latest_updated_at))
+            LOGGER.info("{}: latest_updated_at from {}".format(self.name, latest_updated_at))
             
         if has_disbursement:
             latest_disbursement_date = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get('latest_disbursment_date', DEFAULT_TIMESTAMP))
             run_maximum_disbursement_date = latest_disbursement_date
-            logger.info("{}: disbursement_date from {}".format(self.name, latest_disbursement_date))
+            LOGGER.info("{}: disbursement_date from {}".format(self.name, latest_disbursement_date))
 
 
         # increment through each day (20k results max from api)
@@ -228,21 +232,21 @@ class Stream:
                     else:
                         row_skipped_count += 1
 
-            logger.info("{}: Written {} records from {} - {}".format(self.name, row_written_count, start, end))
+            LOGGER.info("{}: Written {} records from {} - {}".format(self.name, row_written_count, start, end))
 
-            logger.info("{}: Skipped {} records from {} - {}".format(self.name, row_skipped_count, start, end))
+            LOGGER.info("{}: Skipped {} records from {} - {}".format(self.name, row_skipped_count, start, end))
             
         state_value = {
             self.replication_keys: utils.strftime(end)
         }
         
         if has_updated_at:
-            logger.info("{}: Complete. Last updated record: {}".format(self.name, run_maximum_updated_at))
+            LOGGER.info("{}: Complete. Last updated record: {}".format(self.name, run_maximum_updated_at))
             latest_updated_at = run_maximum_updated_at
             state_value["latest_updated_at"] = utils.strftime(latest_updated_at)
             
         if has_disbursement:
-            logger.info("{}: Complete. Last disbursement date: {}".format(self.name, run_maximum_disbursement_date))
+            LOGGER.info("{}: Complete. Last disbursement date: {}".format(self.name, run_maximum_disbursement_date))
             latest_disbursement_date = run_maximum_disbursement_date
             state_value["latest_disbursement_date"] = utils.strftime(latest_disbursement_date)
 
@@ -250,10 +254,11 @@ class Stream:
 
         return row_written_count
 
-    def sync_full_table(self, data, schema):
+    def sync_full_table(self, gateway, schema):
         """
         Sync function for full_table stream
         """
+        data = SDK_CALL[self.name](gateway)
         time_extracted = utils.now()
         row_written_count = 0
         
@@ -272,8 +277,7 @@ class AddOn(Stream):
     key_properties = ["id"]
     
     def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        data = gateway.add_on.all()
-        return self.sync_without_window(data, config, schema, state, selected_streams, sync_streams)
+        return self.sync_without_window(gateway, config, schema, state, selected_streams, sync_streams)
 
 class Customer(Stream):
     name = "customers"
@@ -291,8 +295,7 @@ class Discount(Stream):
     key_properties = ["id"]
     
     def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        data = gateway.discount.all()
-        return self.sync_without_window(data, config, schema, state, selected_streams, sync_streams)
+        return self.sync_without_window(gateway, config, schema, state, selected_streams, sync_streams)
 
 
 class Dispute(Stream):
@@ -310,8 +313,7 @@ class MerchantAccount(Stream):
     key_properties = ["id"]
     
     def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        data = gateway.merchant_account.all().merchant_accounts
-        return self.sync_full_table(data, schema)
+        return self.sync_full_table(gateway, schema)
 
 
 class Plan(Stream):
@@ -321,8 +323,7 @@ class Plan(Stream):
     key_properties = ["id"]
     
     def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        data = gateway.plan.all()
-        return self.sync_without_window(data, config, schema, state, selected_streams, sync_streams)
+        return self.sync_without_window(gateway, config, schema, state, selected_streams, sync_streams)
 
 class SettlementBatchSummary(Stream):
     name = "settlement_batch_summary"
