@@ -20,15 +20,15 @@ REQUIRED_CONFIG_KEYS = [
     "start_date"
 ]
 
-logger = singer.get_logger()
+LOGGER = singer.get_logger()
 
 def do_discover():
-    logger.info("Starting discovery")
+    LOGGER.info("Starting discovery")
     catalog = discover()
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
-    logger.info("Finished discover")
+    LOGGER.info("Finished discover")
 
-@utils.handle_top_exception(logger)
+@utils.handle_top_exception(LOGGER)
 def main():
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
     config = {}
@@ -61,7 +61,7 @@ def main():
                 state
             )    
     except braintree.exceptions.authentication_error.AuthenticationError:
-        logger.critical('Authentication error occured. '
+        LOGGER.critical('Authentication error occured. '
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
 
