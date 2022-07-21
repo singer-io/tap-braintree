@@ -181,6 +181,9 @@ class Stream:
                 if has_updated_at and not getattr(row, 'updated_at'):
                     row.updated_at = row.created_at
 
+                if self.name == "settlement_batch_summary":
+                    row['settlement_date'] = utils.strftime(start)
+
                 transformed = transform_row(row, schema)
                 
                 if has_disbursement:
