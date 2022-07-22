@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-
-from datetime import datetime, timedelta
-import os
-import pytz
-import json
 import sys
-
+import json
 import braintree
 import singer
-
 from singer import utils
 from tap_braintree.discover import discover
 from tap_braintree.sync import sync as _sync
@@ -23,6 +17,10 @@ REQUIRED_CONFIG_KEYS = [
 LOGGER = singer.get_logger()
 
 def do_discover():
+    """
+    Run discovery mode
+    """
+
     LOGGER.info("Starting discovery")
     catalog = discover()
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
@@ -61,10 +59,7 @@ def main():
                 state
             )    
     except braintree.exceptions.authentication_error.AuthenticationError:
-        LOGGER.critical('Authentication error occured. '
-                        'Please check your merchant_id, public_key, and '
-                        'private_key for errors', exc_info=True)
-
+        LOGGER.critical('Authentication error occured. Please check your merchant_id, public_key, and private_key for errors', exc_info=True)
 
 if __name__ == '__main__':
     main()

@@ -1,37 +1,13 @@
-from readline import replace_history_item
+import pytz
 import singer
 import braintree
 from singer import utils
 from datetime import datetime, timedelta
-import pytz
 from .transform import transform_row
 
 TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 LOGGER = singer.get_logger()
-
-SDK_CALL = {
-    "add_ons": lambda gateway: gateway.add_on.all(),
-    "customers": lambda gateway, start, end: gateway.customer.search(braintree.CustomerSearch.created_at.between(start, end)),
-    "discounts": lambda gateway: gateway.discount.all(),
-    "disputes": lambda gateway, start, end: gateway.dispute.search(braintree.DisputeSearch.received_date.between(start, end)).disputes.items,
-    "merchant_accounts": lambda gateway: gateway.merchant_account.all().merchant_accounts,
-    "plans": lambda gateway: gateway.plan.all(),
-    "settlement_batch_summary": lambda gateway, start, end: gateway.settlement_batch_summary.generate(start.strftime("%Y-%m-%d")).settlement_batch_summary.records,
-    "subscriptions": lambda gateway, start, end: gateway.subscription.search(braintree.SubscriptionSearch.created_at.between(start, end)),
-    "transactions": lambda gateway, start, end: gateway.transaction.search(braintree.TransactionSearch.created_at.between(start, end))
-}
-
-# Currently syncing sets the stream currently being delivered in the state.
-# If the integration is interrupted, this state property is used to identify
-#  the starting point to continue from.
-# Reference: https://github.com/singer-io/singer-python/blob/master/singer/bookmarks.py#L41-L46
-def update_currently_syncing(state, stream_name):
-    if (stream_name is None) and ('currently_syncing' in state):
-        del state['currently_syncing']
-    else:
-        singer.set_currently_syncing(state, stream_name)
-    singer.write_state(state)
 
 class Stream:
     name = None
@@ -39,7 +15,7 @@ class Stream:
     replication_keys = None
     key_properties = None
     parent_stream = None
-    
+
     # To write schema in output
     def write_schema(self, schema, stream_name, sync_streams , selected_streams):
         """
@@ -63,6 +39,7 @@ class Stream:
         """
         To write bookmark in sync mode
         """
+
         if 'bookmarks' not in state:
             state['bookmarks'] = {}
         if stream not in state['bookmarks']:
@@ -102,12 +79,19 @@ class Stream:
 
         for n in range(int((end_date - start_date).days)):
             yield start_date + timedelta(n), start_date + timedelta(n + 1)
-    
-    def sync_without_window(self, gateway, config, schema, state, selected_streams, sync_streams):
+
+class SyncWithoutWindow(Stream):
+    sdk_call = None
+    key_properties = ["id"]
+    replication_keys = "updated_at"
+    replication_method = "INCREMENTAL"
+
+    def sync(self, gateway, config, schema, state, selected_streams, sync_streams):
         """
         Sync function for incremental stream without window logic
         """
-        data = SDK_CALL[self.name](gateway)
+
+        data = self.sdk_call(gateway)
         time_extracted = utils.now()
         latest_start_date = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get(self.replication_keys, config['start_date']) )
 
@@ -141,12 +125,18 @@ class Stream:
         self.write_bookmark(state, self.name, state_value)
 
         return row_written_count
-    
-    
-    def sync_with_window(self, gateway, config, schema, state, selected_streams, sync_streams):
+
+class SyncWithWindow(Stream):
+    sdk_call = None
+    key_properties = ["id"]
+    replication_keys = "created_at"
+    replication_method = "INCREMENTAL"
+
+    def sync(self, gateway, config, schema, state, selected_streams, sync_streams):
         """
         Sync function for incremental stream with window logic
         """
+
         has_updated_at = self.name in {"customers", "disputes", "subscriptions", "transactions"}
         has_disbursement = self.name in {"disputes", "transactions"}
         
@@ -174,7 +164,7 @@ class Stream:
         for start, end in self.daterange(period_start, period_end):
             end = min(end, period_end)
 
-            data = SDK_CALL[self.name](gateway, start, end)
+            data = self.sdk_call(gateway, start, end)
             time_extracted = utils.now()
 
             row_written_count = 0
@@ -254,11 +244,16 @@ class Stream:
 
         return row_written_count
 
-    def sync_full_table(self, gateway, schema):
+class FullTableSync(Stream):
+    sdk_call = None
+    key_properties = ["id"]
+
+    def sync(self, gateway, config, schema, state, selected_streams, sync_streams):
         """
         Sync function for full_table stream
         """
-        data = SDK_CALL[self.name](gateway)
+
+        data = self.sdk_call(gateway)
         time_extracted = utils.now()
         row_written_count = 0
         
@@ -269,89 +264,45 @@ class Stream:
             row_written_count += 1
                 
         return row_written_count
-
-class AddOn(Stream):
+    
+class AddOn(SyncWithoutWindow):
     name = "add_ons"
-    replication_method = "INCREMENTAL"
-    replication_keys = "updated_at"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_without_window(gateway, config, schema, state, selected_streams, sync_streams)
+    sdk_call = lambda self, gateway: gateway.add_on.all()
 
-class Customer(Stream):
+class Customer(SyncWithWindow):
     name = "customers"
-    replication_method = "INCREMENTAL"
-    replication_keys = "created_at"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_with_window(gateway, config, schema, state, selected_streams, sync_streams)
+    sdk_call = lambda self, gateway, start, end: gateway.customer.search(braintree.CustomerSearch.created_at.between(start, end))
 
-class Discount(Stream):
+class Discount(SyncWithoutWindow):
     name = "discounts"
-    replication_method = "INCREMENTAL"
-    replication_keys = "updated_at"
-    key_properties = ["id"]
+    sdk_call = lambda self, gateway: gateway.discount.all()
     
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_without_window(gateway, config, schema, state, selected_streams, sync_streams)
-
-
-class Dispute(Stream):
+class Dispute(SyncWithWindow):
     name = "disputes"
-    replication_method = "INCREMENTAL"
     replication_keys = "received_date"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_with_window(gateway, config, schema, state, selected_streams, sync_streams)
+    sdk_call = lambda self, gateway, start, end: gateway.dispute.search(braintree.DisputeSearch.received_date.between(start, end)).disputes.items
 
-class MerchantAccount(Stream):
+class MerchantAccount(FullTableSync):
     name = "merchant_accounts"
-    replication_method = "FULL_TABLE"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_full_table(gateway, schema)
+    sdk_call = lambda self, gateway: gateway.merchant_account.all().merchant_accounts
 
-
-class Plan(Stream):
+class Plan(SyncWithoutWindow):
     name = "plans"
-    replication_method = "INCREMENTAL"
-    replication_keys = "updated_at"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_without_window(gateway, config, schema, state, selected_streams, sync_streams)
+    sdk_call = lambda self, gateway: gateway.plan.all()
 
-class SettlementBatchSummary(Stream):
+class SettlementBatchSummary(SyncWithWindow):
     name = "settlement_batch_summary"
-    replication_method = "INCREMENTAL"
     replication_keys = "settlement_date"
     key_properties = ["settlement_date"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_with_window(gateway, config, schema, state, selected_streams, sync_streams)
+    sdk_call = lambda self, gateway, start, end: gateway.settlement_batch_summary.generate(start.strftime("%Y-%m-%d")).settlement_batch_summary.records
 
-class Subscription(Stream):
+class Subscription(SyncWithWindow):
     name = "subscriptions"
-    replication_method = "INCREMENTAL"
-    replication_keys = "created_at"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_with_window(gateway, config, schema, state, selected_streams, sync_streams)
+    sdk_call = lambda self, gateway, start, end: gateway.subscription.search(braintree.SubscriptionSearch.created_at.between(start, end))
 
-class Transaction(Stream):
+class Transaction(SyncWithWindow):
     name = "transactions"
-    replication_method = "INCREMENTAL"
-    replication_keys = "created_at"
-    key_properties = ["id"]
-    
-    def sync_endpoint(self, gateway, config, schema, state, selected_streams, sync_streams):
-        return self.sync_with_window(gateway, config, schema, state, selected_streams, sync_streams)
-
+    sdk_call = lambda self, gateway, start, end: gateway.transaction.search(braintree.TransactionSearch.created_at.between(start, end))
 
 STREAMS = {
     "add_ons": AddOn,
