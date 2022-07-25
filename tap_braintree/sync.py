@@ -81,8 +81,7 @@ def sync(gateway, config, catalog, state):
             config = config,
             schema = schema,
             state = state,
-            selected_streams = selected_streams,
-            sync_streams = sync_streams
+            selected_streams = selected_streams
         )
         
         update_currently_syncing(state, None)

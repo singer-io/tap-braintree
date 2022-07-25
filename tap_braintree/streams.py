@@ -86,7 +86,7 @@ class SyncWithoutWindow(Stream):
     replication_keys = "updated_at"
     replication_method = "INCREMENTAL"
 
-    def sync(self, gateway, config, schema, state, selected_streams, sync_streams):
+    def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for incremental stream without window logic
         """
@@ -94,6 +94,7 @@ class SyncWithoutWindow(Stream):
         data = self.sdk_call(gateway)
         time_extracted = utils.now()
         latest_start_date = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get(self.replication_keys, config['start_date']) )
+        max_updated_at = latest_updated_at = latest_start_date
 
         period_start = latest_start_date - TRAILING_DAYS
 
@@ -109,9 +110,9 @@ class SyncWithoutWindow(Stream):
                 row.updated_at = row.created_at
                 
             if self.to_utc(row.updated_at) >= latest_start_date:
-                row_written_count += 1
                 transformed = transform_row(row, schema)
                 latest_updated_at = self.to_utc(row.updated_at)
+                max_updated_at = max(max_updated_at, latest_updated_at)
                 singer.write_record(self.name, transformed, time_extracted=time_extracted)
                 row_written_count += 1
                 
@@ -120,7 +121,7 @@ class SyncWithoutWindow(Stream):
         LOGGER.info("{}: Complete. Last updated record: {}".format(self.name, latest_updated_at))
 
         state_value = {
-            self.replication_keys: utils.strftime(latest_updated_at)
+            self.replication_keys: utils.strftime(max_updated_at)
         }
         self.write_bookmark(state, self.name, state_value)
 
@@ -132,11 +133,10 @@ class SyncWithWindow(Stream):
     replication_keys = "created_at"
     replication_method = "INCREMENTAL"
 
-    def sync(self, gateway, config, schema, state, selected_streams, sync_streams):
+    def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for incremental stream with window logic
         """
-
         has_updated_at = self.name in {"customers", "disputes", "subscriptions", "transactions"}
         has_disbursement = self.name in {"disputes", "transactions"}
         
@@ -158,7 +158,6 @@ class SyncWithWindow(Stream):
             latest_disbursement_date = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get('latest_disbursment_date', DEFAULT_TIMESTAMP))
             run_maximum_disbursement_date = latest_disbursement_date
             LOGGER.info("{}: disbursement_date from {}".format(self.name, latest_disbursement_date))
-
 
         # increment through each day (20k results max from api)
         for start, end in self.daterange(period_start, period_end):
@@ -184,7 +183,7 @@ class SyncWithWindow(Stream):
                     # if disbursement is successful, get disbursement date
                     # set disbursement datetime to min if not found
                     if row.disbursement_details is None:
-                        disbursement_date = datetime.min
+                        disbursement_date = self.to_utc(datetime.min)
                     else:
                         if row.disbursement_details.disbursement_date is None:
                             row.disbursement_details.disbursement_date = datetime.min
@@ -248,17 +247,15 @@ class FullTableSync(Stream):
     sdk_call = None
     key_properties = ["id"]
 
-    def sync(self, gateway, config, schema, state, selected_streams, sync_streams):
+    def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for full_table stream
         """
-
         data = self.sdk_call(gateway)
         time_extracted = utils.now()
         row_written_count = 0
         
         for row in data:
-            row_written_count += 1
             transformed = transform_row(row, schema)
             singer.write_record(self.name, transformed, time_extracted=time_extracted)
             row_written_count += 1
