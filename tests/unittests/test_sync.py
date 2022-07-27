@@ -148,12 +148,3 @@ class TestSyncMode(unittest.TestCase):
         
         self.assertEqual(record_counts, 2, "Not getting expected number of the records")
         self.assertEqual(mocked_transform_row.call_count, 192, "Not getting expected number of calls")
-        
-        
-        
-        
-        
-        
-        
-        
-        
