@@ -10,11 +10,12 @@
                 "string"
             ]
         },
-        "current_billing_cycle": {
+        "created_at": {
             "type": [
                 "null",
-                "integer"
-            ]
+                "string"
+            ],
+            "format": "date-time"
         },
         "description": {
             "type": [
@@ -29,6 +30,12 @@
             ]
         },
         "kind": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "merchant_id": {
             "type": [
                 "null",
                 "string"
@@ -52,11 +59,12 @@
                 "integer"
             ]
         },
-        "quantity": {
+        "updated_at": {
             "type": [
                 "null",
-                "integer"
-            ]
+                "string"
+            ],
+            "format": "date-time"
         }
     }
 }
