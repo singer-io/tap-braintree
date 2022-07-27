@@ -12,7 +12,7 @@ setup(name='tap-braintree',
       install_requires=[
           'singer-python==5.12.2',
           'requests==2.20.0',
-          'braintree==3.53.0',
+          'braintree==4.16.0',
       ],
       extras_require={
           'dev': [
