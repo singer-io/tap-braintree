@@ -4,31 +4,48 @@
         "object"
     ],
     "properties": {
-        "records": {
+        "settlement_date": {
             "type": [
                 "null",
-                "array"
+                "string"
             ],
-            "items": {
-                "type": [
-                    "null",
-                    "objects"
-                ],
-                "properties": {
-                    "group_by_custom_field": {
-                        "type": [
-                            "null",
-                            "string"
-                        ]
-                    },
-                    "settlement_date": {
-                        "type": [
-                            "null",
-                            "strings"
-                        ]
-                    }
-                }
-            }
+            "format": "date-time"
+        },
+        "custom_field_1": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "card_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "count": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "merchant_account_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "kind": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "amount_settled": {
+            "type": [
+                "null",
+                "string"
+            ]
         }
     }
 }

@@ -59,6 +59,12 @@
                 "string"
             ]
         },
+        "merchant_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
         "name": {
             "type": [
                 "null",

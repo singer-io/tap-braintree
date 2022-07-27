@@ -4,43 +4,20 @@
         "object"
     ],
     "properties": {
-        "business": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "business_details": {
             "type": [
                 "null",
                 "object"
             ],
             "properties": {
                 "address_details": {
-                    "type": [
-                        "null",
-                        "string"
-                    ],
-                    "properties": {
-                        "locality": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "postal_code": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "region": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "street_address": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        }
-                    }
+                    "$ref": "shared/address_details.json#/"
                 },
                 "dba_name": {
                     "type": [
@@ -74,7 +51,7 @@
                 "boolean"
             ]
         },
-        "funding": {
+        "funding_details": {
             "type": [
                 "null",
                 "object"
@@ -118,49 +95,14 @@
                 }
             }
         },
-        "id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "individual": {
+        "individual_details": {
             "type": [
                 "null",
                 "object"
             ],
             "properties": {
                 "address_details": {
-                    "type": [
-                        "null",
-                        "object"
-                    ],
-                    "properties": {
-                        "locality": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "postal_code": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "region": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        },
-                        "street_address": {
-                            "type": [
-                                "null",
-                                "string"
-                            ]
-                        }
-                    }
+                    "$ref": "shared/address_details.json#/"
                 },
                 "date_of_birth": {
                     "type": [

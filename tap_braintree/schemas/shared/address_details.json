@@ -1,0 +1,32 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "locality": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "postal_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "region": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "street_address": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}
