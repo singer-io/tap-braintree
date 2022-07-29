@@ -2,10 +2,13 @@
 import sys
 import json
 import braintree
+from requests import request
 import singer
 from singer import utils
 from tap_braintree.discover import discover
 from tap_braintree.sync import sync as _sync
+
+REQUEST_TIME_OUT = 300
 
 REQUIRED_CONFIG_KEYS = [
     "merchant_id", 
@@ -40,12 +43,20 @@ def main():
 
     environment = getattr(braintree.Environment, config.pop("environment", "Production"))
     
+    request_timeout = config.get("request_timeout")
+    if request_timeout and float(request_timeout):
+        request_timeout = float(request_timeout)
+    else:
+        # If value in config is 0 or of type string then set default to 300 seconds.
+        request_timeout = REQUEST_TIME_OUT
+
     gateway = braintree.BraintreeGateway(
         braintree.Configuration(
             environment,
             merchant_id = config['merchant_id'],
             public_key= config["public_key"],
-            private_key=config["private_key"]
+            private_key=config["private_key"],
+            timeout = request_timeout
         )
     )
     try:

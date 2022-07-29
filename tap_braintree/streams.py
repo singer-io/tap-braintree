@@ -1,9 +1,16 @@
 import pytz
 import singer
 import braintree
+import backoff
 from singer import utils
 from datetime import datetime, timedelta
 from .transform import transform_row
+
+from braintree.exceptions.too_many_requests_error import TooManyRequestsError
+from braintree.exceptions.server_error import ServerError
+from braintree.exceptions.service_unavailable_error import ServiceUnavailableError
+from braintree.exceptions.gateway_timeout_error import GatewayTimeoutError
+
 
 TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
@@ -86,6 +93,14 @@ class SyncWithoutWindow(Stream):
     replication_keys = "updated_at"
     replication_method = "INCREMENTAL"
 
+    # Backoff the request for 5 times when ConnectionError, TooManyRequestsError (status code = 429),
+    # ServerError(status code = 500) , ServiceUnavailableError (status code = 503) ,
+    # or GatewayTimeoutError (status code = 504) occurs
+    @backoff.on_exception(
+        backoff.expo,
+        (ConnectionError, TooManyRequestsError, ServerError, ServiceUnavailableError, GatewayTimeoutError),
+        max_tries=5,
+        factor=2)
     def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for incremental stream without window logic
@@ -133,6 +148,14 @@ class SyncWithWindow(Stream):
     replication_keys = "created_at"
     replication_method = "INCREMENTAL"
 
+    # Backoff the request for 5 times when ConnectionError, TooManyRequestsError (status code = 429),
+    # ServerError(status code = 500) , ServiceUnavailableError (status code = 503) ,
+    # or GatewayTimeoutError (status code = 504) occurs
+    @backoff.on_exception(
+        backoff.expo,
+        (ConnectionError, TooManyRequestsError, ServerError, ServiceUnavailableError, GatewayTimeoutError),
+        max_tries=5,
+        factor=2)
     def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for incremental stream with window logic
@@ -247,6 +270,14 @@ class FullTableSync(Stream):
     sdk_call = None
     key_properties = ["id"]
 
+    # Backoff the request for 5 times when ConnectionError, TooManyRequestsError (status code = 429),
+    # ServerError(status code = 500) , ServiceUnavailableError (status code = 503) ,
+    # or GatewayTimeoutError (status code = 504) occurs
+    @backoff.on_exception(
+        backoff.expo,
+        (ConnectionError, TooManyRequestsError, ServerError, ServiceUnavailableError, GatewayTimeoutError),
+        max_tries=5,
+        factor=2)
     def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for full_table stream
