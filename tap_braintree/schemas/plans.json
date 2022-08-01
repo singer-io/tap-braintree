@@ -10,7 +10,7 @@
                 "array"
             ],
             "items": {
-                "$ref": "add_on.json#/"
+                "$ref": "/add_ons.json"
             }
         },
         "billing_day_of_month": {
@@ -50,16 +50,10 @@
                 "array"
             ],
             "items": {
-                "$ref": "discount.json#/"
+                "$ref": "/discounts.json"
             }
         },
         "id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "merchant_id": {
             "type": [
                 "null",
                 "string"
@@ -80,7 +74,7 @@
         "price": {
             "type": [
                 "null",
-                "string"
+                "number"
             ]
         },
         "trial_duration": {
@@ -98,7 +92,7 @@
         "trial_period": {
             "type": [
                 "null",
-                "integer"
+                "boolean"
             ]
         },
         "updated_at": {

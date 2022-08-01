@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import json
+import datetime
 import braintree
 import singer
 from singer import utils
@@ -48,6 +49,15 @@ def main():
             private_key=config["private_key"]
         )
     )
+
+    # This is added for credentials verification. If credentials are invalid then it will raise Authentication Error
+    gateway.customer.search(
+        braintree.CustomerSearch.created_at.between(
+        datetime.datetime(2022, 6, 29),
+        datetime.datetime(2011, 6, 30)
+        )
+    )
+
     try:
         if parsed_args.discover:
             do_discover()

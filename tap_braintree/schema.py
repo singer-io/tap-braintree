@@ -10,6 +10,24 @@ def get_abs_path(path):
     
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
+def load_shared_schema_refs():
+    """Return dictionary of shared schema"""
+
+    shared_schemas_path = get_abs_path('schemas')
+
+    shared_file_names = ["shared/" + f for f in os.listdir(get_abs_path('schemas/shared'))]
+
+    shared_schemas = ["add_ons.json", "discounts.json", "transactions.json"]
+
+    shared_schemas.extend(shared_file_names)
+
+    shared_schema_refs = {}
+    for shared_file in shared_schemas:
+        with open(os.path.join(shared_schemas_path, shared_file)) as data_file:
+            shared_schema_refs['/' + shared_file] = json.load(data_file)
+
+    return shared_schema_refs
+
 def get_schemas():
     """
     Return metadata and schema for all the streams

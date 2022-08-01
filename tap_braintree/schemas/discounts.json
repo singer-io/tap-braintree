@@ -7,7 +7,13 @@
         "amount": {
             "type": [
                 "null",
-                "string"
+                "number"
+            ]
+        },
+        "current_billing_cycle": {
+            "type": [
+                "null",
+                "integer"
             ]
         },
         "created_at": {
@@ -35,12 +41,6 @@
                 "string"
             ]
         },
-        "merchant_id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
         "name": {
             "type": [
                 "null",
@@ -54,6 +54,12 @@
             ]
         },
         "number_of_billing_cycles": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "quantity": {
             "type": [
                 "null",
                 "integer"

@@ -273,29 +273,10 @@ class Customer(SyncWithWindow):
 class Discount(SyncWithoutWindow):
     name = "discounts"
     sdk_call = lambda self, gateway: gateway.discount.all()
-    
-class Dispute(SyncWithWindow):
-    name = "disputes"
-    replication_keys = "received_date"
-    sdk_call = lambda self, gateway, start, end: gateway.dispute.search(braintree.DisputeSearch.received_date.between(start, end)).disputes.items
-
-class MerchantAccount(FullTableSync):
-    name = "merchant_accounts"
-    sdk_call = lambda self, gateway: gateway.merchant_account.all().merchant_accounts
 
 class Plan(SyncWithoutWindow):
     name = "plans"
     sdk_call = lambda self, gateway: gateway.plan.all()
-
-class SettlementBatchSummary(SyncWithWindow):
-    name = "settlement_batch_summary"
-    replication_keys = "settlement_date"
-    key_properties = ["settlement_date"]
-    sdk_call = lambda self, gateway, start, end: gateway.settlement_batch_summary.generate(start.strftime("%Y-%m-%d")).settlement_batch_summary.records
-
-class Subscription(SyncWithWindow):
-    name = "subscriptions"
-    sdk_call = lambda self, gateway, start, end: gateway.subscription.search(braintree.SubscriptionSearch.created_at.between(start, end))
 
 class Transaction(SyncWithWindow):
     name = "transactions"
@@ -305,10 +286,6 @@ STREAMS = {
     "add_ons": AddOn,
     "customers": Customer,
     "discounts": Discount,
-    "disputes": Dispute,
-    "merchant_accounts": MerchantAccount,
     "plans": Plan,
-    "settlement_batch_summary": SettlementBatchSummary,
-    "subscriptions": Subscription,
     "transactions": Transaction
 }

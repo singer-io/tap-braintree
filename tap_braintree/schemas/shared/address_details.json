@@ -1,9 +1,76 @@
 {
     "type": [
         "null",
-        "object"
+        "string"
     ],
     "properties": {
+        "company": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country_code_alpha2": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country_code_alpha3": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country_code_numeric": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "customer_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "extended_address": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "first_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "last_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
         "locality": {
             "type": [
                 "null",
@@ -27,6 +94,13 @@
                 "null",
                 "string"
             ]
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
         }
     }
 }

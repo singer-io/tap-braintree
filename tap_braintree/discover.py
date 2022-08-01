@@ -1,8 +1,7 @@
+from importlib.metadata import metadata
 import singer
-from singer.catalog import Catalog, CatalogEntry, Schema
 from tap_braintree.streams import STREAMS
-from tap_braintree.schema import get_schemas
-
+from tap_braintree.schema import get_schemas, load_shared_schema_refs
 LOGGER = singer.get_logger()
 
 def discover():
@@ -11,20 +10,20 @@ def discover():
     """
 
     schemas, field_metadata = get_schemas()
-    catalog = Catalog([])
+    streams=[]
 
     for stream_name, schema_dict in schemas.items():
-        schema = Schema.from_dict(schema_dict)
         mdata = field_metadata[stream_name]
+        refs = load_shared_schema_refs()
 
-        catalog.streams.append(
-            CatalogEntry(
-                stream=stream_name,
-                tap_stream_id=stream_name,
-                key_properties=STREAMS[stream_name].key_properties,
-                schema=schema,
-                metadata=mdata,
-            )
-        )
+        catalog_entry = {
+            "stream": stream_name,
+            "tap_stream_id": stream_name,
+            "key_properties": STREAMS[stream_name].key_properties,
+            "schema": singer.resolve_schema_references(schema_dict, refs),
+            "metadata": mdata
+            }
 
-    return catalog
+        streams.append(catalog_entry)
+
+    return {'streams': streams}
