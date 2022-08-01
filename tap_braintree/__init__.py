@@ -7,6 +7,7 @@ import singer
 from singer import utils
 from tap_braintree.discover import discover
 from tap_braintree.sync import sync as _sync
+import datetime
 
 REQUEST_TIME_OUT = 300
 
@@ -43,12 +44,15 @@ def main():
 
     environment = getattr(braintree.Environment, config.pop("environment", "Production"))
     
-    request_timeout = config.get("request_timeout")
-    if request_timeout and float(request_timeout):
-        request_timeout = float(request_timeout)
-    else:
-        # If value in config is 0 or of type string then set default to 300 seconds.
-        request_timeout = REQUEST_TIME_OUT
+    try:
+        # Take value of request_timeout if provided in config else take default value
+        request_timeout = float(config.get("request_timeout", REQUEST_TIME_OUT))
+
+        if request_timeout == 0:
+            # Raise error when request_timeout is given as 0 in config
+            raise ValueError()
+    except ValueError:
+        raise ValueError('Please provide a value greater than 0 for the request_timeout parameter in config')
 
     gateway = braintree.BraintreeGateway(
         braintree.Configuration(
