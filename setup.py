@@ -27,7 +27,7 @@ setup(name='tap-braintree',
       ''',
       packages=['tap_braintree'],
       package_data = {
-          "schemas": ["tap_braintree/schemas/*.json"],
+          "schemas": ["tap_braintree/schemas/*.json", "tap_braintree/schemas/shared/*.json"],
       },
       include_package_data=True,
 )
