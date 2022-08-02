@@ -156,6 +156,10 @@ class SyncWithWindow(Stream):
         (ConnectionError, TooManyRequestsError, ServerError, ServiceUnavailableError, GatewayTimeoutError),
         max_tries=5,
         factor=2)
+    def GetRecords(self, gateway, start, end):
+        """Return records between given date window"""
+        return self.sdk_call(gateway, start, end)
+
     def sync(self, gateway, config, schema, state, selected_streams):
         """
         Sync function for incremental stream with window logic
@@ -186,7 +190,7 @@ class SyncWithWindow(Stream):
         for start, end in self.daterange(period_start, period_end):
             end = min(end, period_end)
 
-            data = self.sdk_call(gateway, start, end)
+            data = self.GetRecords(gateway, start, end)
             time_extracted = utils.now()
 
             row_written_count = 0
