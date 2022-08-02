@@ -80,7 +80,7 @@ class Stream:
         for n in range(int((end_date - start_date).days)):
             yield start_date + timedelta(n), start_date + timedelta(n + 1)
 
-class SyncWithoutWindow(Stream):
+class IncrementSyncWithoutWindow(Stream):
     sdk_call = None
     key_properties = ["id"]
     replication_keys = "updated_at"
@@ -127,7 +127,7 @@ class SyncWithoutWindow(Stream):
 
         return row_written_count
 
-class SyncWithWindow(Stream):
+class IncrementSyncWithWindow(Stream):
     sdk_call = None
     key_properties = ["id"]
     replication_keys = "created_at"
@@ -137,8 +137,8 @@ class SyncWithWindow(Stream):
         """
         Sync function for incremental stream with window logic
         """
-        has_updated_at = self.name in {"customers", "disputes", "subscriptions", "transactions"}
-        has_disbursement = self.name in {"disputes", "transactions"}
+        has_updated_at = self.name in {"customers", "transactions"}
+        has_disbursement = self.name in {"transactions"}
         
         latest_start_date = utils.strptime_to_utc(state.get("bookmarks", {}).get(self.name, {}).get(self.replication_keys, config['start_date']) )
 
@@ -259,23 +259,23 @@ class FullTableSync(Stream):
                 
         return row_written_count
     
-class AddOn(SyncWithoutWindow):
+class AddOn(IncrementSyncWithoutWindow):
     name = "add_ons"
     sdk_call = lambda self, gateway: gateway.add_on.all()
 
-class Customer(SyncWithWindow):
+class Customer(IncrementSyncWithWindow):
     name = "customers"
     sdk_call = lambda self, gateway, start, end: gateway.customer.search(braintree.CustomerSearch.created_at.between(start, end))
 
-class Discount(SyncWithoutWindow):
+class Discount(IncrementSyncWithoutWindow):
     name = "discounts"
     sdk_call = lambda self, gateway: gateway.discount.all()
 
-class Plan(SyncWithoutWindow):
+class Plan(IncrementSyncWithoutWindow):
     name = "plans"
     sdk_call = lambda self, gateway: gateway.plan.all()
 
-class Transaction(SyncWithWindow):
+class Transaction(IncrementSyncWithWindow):
     name = "transactions"
     sdk_call = lambda self, gateway, start, end: gateway.transaction.search(braintree.TransactionSearch.created_at.between(start, end))
 
