@@ -17,7 +17,7 @@ class Mocked:
         self.disbursement_date = disbursement_date
         
     def get_selected_streams(state):
-        return (Mocked(i) for i in ["add_ons", "customers", "merchant_accounts"])
+        return (Mocked(i) for i in ["add_ons", "customers"])
     
     def get_stream(stream_name):
         return Mocked()
@@ -38,45 +38,39 @@ class TestSyncMode(unittest.TestCase):
         _sync("test_gateway", {}, Mocked, {})
         expected = [
             call('Starting Sync'),
-            call("selected_streams: ['add_ons', 'customers', 'merchant_accounts']"),
+            call("selected_streams: ['add_ons', 'customers']"),
             call('stream: add_ons, parent: None'),
             call('stream: customers, parent: None'),
-            call('stream: merchant_accounts, parent: None'),
-            call("Sync Streams: ['add_ons', 'customers', 'merchant_accounts']"),
+            call("Sync Streams: ['add_ons', 'customers']"),
             call('START Syncing: add_ons'),
             call('FINISHED Syncing: add_ons, total_records: 10'),
             call('START Syncing: customers'),
             call('FINISHED Syncing: customers, total_records: 10'),
             call('discounts: Skipping - not selected'),
-            call('disputes: Skipping - not selected'),
-            call('START Syncing: merchant_accounts'),
-            call('FINISHED Syncing: merchant_accounts, total_records: 10'),
             call('plans: Skipping - not selected'),
-            call('settlement_batch_summary: Skipping - not selected'),
-            call('subscriptions: Skipping - not selected'),
             call('transactions: Skipping - not selected'),
             call('Finished sync')
         ]
         self.assertEqual(mocked_LOGGER.mock_calls,  expected, "Logger calls are not as expected")
         
-    @patch("tap_braintree.streams.MerchantAccount.sdk_call", return_value=["test", "test", "test"])
-    @patch("tap_braintree.streams.transform_row", return_value={'currency_iso_code': 'USD', 'default': True, 'id': 'cds', 'status': 'active'})
-    def test_full_table_sync(self, mocked_transform_row, mocked_sdk_call):
-        """
-        Test to verify that syncing return expected number of records for FULL_TABLE streams
-        """
+    # @patch("tap_braintree.streams.MerchantAccount.sdk_call", return_value=["test", "test", "test"])
+    # @patch("tap_braintree.streams.transform_row", return_value={'currency_iso_code': 'USD', 'default': True, 'id': 'cds', 'status': 'active'})
+    # def test_full_table_sync(self, mocked_transform_row, mocked_sdk_call):
+    #     """
+    #     Test to verify that syncing return expected number of records for FULL_TABLE streams
+    #     """
         
-        stream_obj = MerchantAccount()
-        record_counts = stream_obj.sync(
-            gateway = "test",
-            config = {"start_date": ""},
-            schema = {},
-            state = {},
-            selected_streams = ["merchant_accounts"]
-        )
+    #     stream_obj = MerchantAccount()
+    #     record_counts = stream_obj.sync(
+    #         gateway = "test",
+    #         config = {"start_date": ""},
+    #         schema = {},
+    #         state = {},
+    #         selected_streams = ["merchant_accounts"]
+    #     )
         
-        self.assertEqual(mocked_transform_row.call_count, 3, "Not getting expected number of calls")
-        self.assertEqual(record_counts, 3, "Not getting expected number of records")
+    #     self.assertEqual(mocked_transform_row.call_count, 3, "Not getting expected number of calls")
+    #     self.assertEqual(record_counts, 3, "Not getting expected number of records")
     
     @parameterized.expand([
         ['with_state', {"bookmarks": {"add_ons": {"updated_at": "2022-06-28T00:00:00.000000Z"}}}, None],
@@ -101,26 +95,6 @@ class TestSyncMode(unittest.TestCase):
         self.assertEqual(record_counts, 2, "Not getting expected number of the records")
         self.assertEqual(mocked_transform_row.call_count, 2, "Not getting expected number of calls")
     
-    @patch("tap_braintree.streams.utils.now", return_value=datetime(2022,6,26,00,00,00).replace(tzinfo=pytz.UTC))
-    @patch("tap_braintree.streams.transform_row", return_value="test_data")
-    @patch("tap_braintree.streams.SettlementBatchSummary.sdk_call", return_value=[{"settlement_date": datetime(2022, 6, 29, 11, 46, 12)}])
-    def test_sync_with_window_for_settlement_batch_summary(self, mocked_sdk_call, mocked_transform_row, mocked_utils_now):
-        """
-        Test to verify that syncing with date window return expected number of records for INCREMENTAL stream settlement_batch_summary
-        """
-        
-        stream_obj = SettlementBatchSummary()
-        record_counts = stream_obj.sync(
-            gateway = "test",
-            config = {"start_date": "2022-06-25T00:00:00Z"},
-            schema = {},
-            state = {},
-            selected_streams = ["settlement_batch_summary"]
-        )
-        
-        self.assertEqual(record_counts, 1, "Not getting expected number of the records")
-        self.assertEqual(mocked_transform_row.call_count, 32, "Not getting expected number of calls")
-        
     @patch("tap_braintree.streams.utils.now", return_value=datetime(2022,6,30,00,00,00).replace(tzinfo=pytz.UTC))   
     @patch("tap_braintree.streams.transform_row", return_value="test_data")
     @patch("tap_braintree.streams.Transaction.sdk_call", return_value=[Mocked(None, datetime(2022, 5, 29, 11, 46, 12)), Mocked(None, datetime(2022, 6, 29, 11, 46, 12)), Mocked(None, datetime(2022, 6, 29, 11, 46, 12), datetime(2022, 6, 29, 11, 46, 12), datetime(2022, 6, 29, 11, 46, 12))])

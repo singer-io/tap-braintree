@@ -17,7 +17,7 @@ def load_shared_schema_refs():
 
     shared_file_names = ["shared/" + f for f in os.listdir(get_abs_path('schemas/shared'))]
 
-    shared_schemas = ["add_ons.json", "discounts.json", "transactions.json"]
+    shared_schemas = ["add_ons.json", "discounts.json"]
 
     shared_schemas.extend(shared_file_names)
 
