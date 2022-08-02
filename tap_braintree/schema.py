@@ -5,13 +5,15 @@ from tap_braintree.streams import STREAMS
 
 def get_abs_path(path):
     """
-    Return full path for given argument relative path
+    Return full path for the specified file
     """
-    
+
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 def load_shared_schema_refs():
-    """Return dictionary of shared schema"""
+    """
+    Fetch and return dictionary of schemas for references
+    """
 
     shared_schemas_path = get_abs_path('schemas')
 
@@ -30,9 +32,9 @@ def load_shared_schema_refs():
 
 def get_schemas():
     """
-    Return metadata and schema for all the streams
+    Fetch and return metadata and schema for all the streams
     """
-    
+
     schemas = {}
     field_metadata = {}
 
@@ -51,7 +53,7 @@ def get_schemas():
             valid_replication_keys=stream_metadata.replication_keys,
             replication_method=stream_metadata.replication_method,
         )
- 
+
         mdata = metadata.to_map(mdata)
         # Loop through all keys and make replication keys of automatic inclusion
         for field_name in schema["properties"].keys():

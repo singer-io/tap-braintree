@@ -1,4 +1,3 @@
-from importlib.metadata import metadata
 import singer
 from tap_braintree.streams import STREAMS
 from tap_braintree.schema import get_schemas, load_shared_schema_refs
@@ -6,7 +5,7 @@ LOGGER = singer.get_logger()
 
 def discover():
     """
-    Generate catalog for call the streams
+    Run the discover mode, prepare the catalog file and return the catalog
     """
 
     schemas, field_metadata = get_schemas()
@@ -14,6 +13,8 @@ def discover():
 
     for stream_name, schema_dict in schemas.items():
         mdata = field_metadata[stream_name]
+
+        # Loading referred schemas
         refs = load_shared_schema_refs()
 
         catalog_entry = {
