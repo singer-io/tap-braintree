@@ -10,6 +10,15 @@
                 "string"
             ]
         },
+        "add_ons": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "$ref": "/add_ons.json"
+            }
+        },
         "additional_processor_response": {
             "type": [
                 "null",
@@ -917,6 +926,294 @@
                 "number"
             ]
         },
+        "discounts": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "$ref": "/discounts.json"
+            }
+        },
+        "disputes": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "amount_disputed": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "amount_won": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "case_number": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "charge_back_protection_level": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "created_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "currency_iso_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "evidence": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "comment": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "created_at": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        },
+                        "id": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "sent_to_processor_at": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        },
+                        "url": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "graphQL_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "kind": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "merchant_account_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "original_dispute_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "paypal_messages": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "message": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "send_at": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        },
+                        "sender": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "processor_comments": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "reason": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "reason_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "reason_description": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "received_date": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "reference_number": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "reply_by_date": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "status_history": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "disbursement_date": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        },
+                        "effective_date": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        },
+                        "status": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "timestamp": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        }
+                    }
+                },
+                "transaction": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "amount": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
+                        "created_at": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date-time"
+                        },
+                        "id": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "order_id": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "payment_instrument_subtype": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "purchase_order_number": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "updated_at": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                }
+            }
+        },
         "escrow_status": {
             "type": [
                 "null",
@@ -992,6 +1289,92 @@
                 "null",
                 "string"
             ]
+        },
+        "line_items": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "commodity_code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "discount_amount": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "kind": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "product_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "quantity": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "tax_amount": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "total_amount": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "unit_amount": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "unit_of_measure": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "unit_tax_amount": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "url": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
         },
         "masterpass_card_details": {
             "type": [
