@@ -22,3 +22,9 @@ jobs:
           command: |
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
             nosetests tests
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build:
+          context: circleci-user
