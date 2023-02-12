@@ -77,13 +77,57 @@
         "credit_card_details": {
             "type": "object",
             "properties": {
+                "bin": {
+                    "type": ["null", "string"]
+                },
                 "customer_location": {
                     "type": ["null", "string"]
                 },
                 "card_type": {
                     "type": ["null", "string"]
+                },
+                "country_of_issuance": {
+                    "type": ["null", "string"]
+                },
+                "issuing_bank": {
+                    "type": ["null", "string"]
+                },
+                "unique_number_identifier": {
+                    "type": ["null", "string"]
                 }
             }
+        },
+        "cvv_response_code": {
+            "type": ["null", "string"]
+        },
+        "avs_error_response_code": {
+            "type": ["null", "string"]
+        },
+        "avs_postal_code_response_code": {
+            "type": ["null", "string"]
+        },
+        "avs_street_address_response_code": {
+            "type": ["null", "string"]
+        },
+        "risk_data": {
+            "type": "object",
+            "properties": {
+                "decision": {
+                    "type": ["null", "string"]
+                },
+                "decision_reasons": {
+                    "type": ["null", "string"]
+                },
+                "id": {
+                    "type": ["null", "string"]
+                },
+                "transaction_risk_score": {
+                    "type": ["null", "string"]
+                }
+            }
+        },
+        "disputes": {
+            "type": ["null", "array"]
         },
         "subscription_details":{
             "type": "object",
