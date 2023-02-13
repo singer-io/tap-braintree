@@ -127,7 +127,15 @@
             }
         },
         "disputes": {
-            "type": ["null", "array"]
+            "anyOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "array",
+                    "items": "object"
+                }
+            ]
         },
         "subscription_details":{
             "type": "object",
