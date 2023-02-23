@@ -10,9 +10,9 @@ setup(name='tap-braintree',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
       py_modules=['tap_braintree'],
       install_requires=[
-          'singer-python==5.5.0',
+          'singer-python==5.12.2',
           'requests==2.20.0',
-          'braintree==3.53.0',
+          'braintree==4.16.0',
       ],
       extras_require={
           'dev': [
@@ -27,9 +27,7 @@ setup(name='tap-braintree',
       ''',
       packages=['tap_braintree'],
       package_data = {
-          'tap_braintree/schemas': [
-              'transactions.json',
-          ],
+          "schemas": ["tap_braintree/schemas/*.json", "tap_braintree/schemas/shared/*.json"],
       },
       include_package_data=True,
 )

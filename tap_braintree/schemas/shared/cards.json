@@ -1,0 +1,205 @@
+{
+    "billing_address": {
+        "type": [
+            "null",
+            "string"
+        ],
+        "properties": {
+            "company": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "country_code_alpha2": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "country_code_alpha3": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "country_code_numeric": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "country_name": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "created_at": {
+                "type": [
+                    "null",
+                    "string"
+                ],
+                "format": "date-time"
+            },
+            "customer_id": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "extended_address": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "first_name": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "id": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "last_name": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "locality": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "postal_code": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "region": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "street_address": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            },
+            "updated_at": {
+                "type": [
+                    "null",
+                    "string"
+                ],
+                "format": "date-time"
+            }
+        }
+    },
+    "bin": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+    "commercial": {
+        "type": [
+            "null",
+            "string"
+        ],
+        "enum": [
+            "CreditCard.Commercial.Yes",
+            "CreditCard.Commercial.No",
+            "CreditCard.Commercial.Unknown"
+        ]
+    },
+    "country_of_issuance": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+    "durbin_regulated": {
+        "type": [
+            "null",
+            "string"
+        ],
+        "enum": [
+            "CreditCard.DurbinRegulated.Yes",
+            "CreditCard.DurbinRegulated.No",
+            "CreditCard.DurbinRegulated.Unknown"
+        ]
+    },
+    "expiration_month": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+    "expiration_year": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+    "healthcare": {
+        "type": [
+            "null",
+            "string"
+        ],
+        "enum": [
+            "CreditCard.HealthCare.Yes",
+            "CreditCard.HealthCare.No",
+            "CreditCard.HealthCare.Unknown"
+        ]
+    },
+    "issuing_bank": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+    "payroll": {
+        "type": [
+            "null",
+            "string"
+        ],
+        "enum": [
+            "CreditCard.Payroll.Yes",
+            "CreditCard.Payroll.No",
+            "CreditCard.Payroll.Unknown"
+        ]
+    },
+    "prepaid": {
+        "type": [
+            "null",
+            "string"
+        ],
+        "enum": [
+            "CreditCard.Prepaid.Yes",
+            "CreditCard.Prepaid.No",
+            "CreditCard.Prepaid.Unknown"
+        ]
+    },
+    "product_id": {
+        "type": [
+            "null",
+            "string"
+        ]
+    },
+    "token": {
+        "type": [
+            "null",
+            "string"
+        ]
+    }
+}

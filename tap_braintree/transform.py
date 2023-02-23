@@ -66,10 +66,10 @@ def _transform_field(value, field_schema):
     if "anyOf" in field_schema:
         return _anyOf(value, field_schema["anyOf"])
 
-    if field_schema["type"] == "array":
+    if "array" in field_schema["type"]:
         return _array(value, field_schema["items"])
 
-    if field_schema["type"] == "object":
+    if "object" in field_schema["type"]:
         return _object(value, field_schema["properties"])
 
     # Ordering of isinstance datetime checks matters

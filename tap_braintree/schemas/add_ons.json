@@ -1,0 +1,76 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "amount": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "current_billing_cycle": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "kind": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "never_expires": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "number_of_billing_cycles": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "quantity": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        }
+    }
+}
