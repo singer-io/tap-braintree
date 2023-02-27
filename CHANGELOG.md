@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.2
+  * Update Braintree python SDK version to 4.18.1 [#44](https://github.com/singer-io/tap-braintree/pull/44)
+
 ## 0.9.1
   * Add `subscription_id` to `transactions` stream [#25](https://github.com/singer-io/tap-braintree/pull/25)
 
