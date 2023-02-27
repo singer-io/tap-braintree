@@ -1,8 +1,13 @@
-version: 2
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: 218546966473.dkr.ecr.us-east-1.amazonaws.com/circle-ci:stitch-tap-tester
+
 jobs:
   build:
-    docker:
-      - image: 218546966473.dkr.ecr.us-east-1.amazonaws.com/circle-ci:tap-tester
+    executor: docker-executor
     steps:
       - checkout
       - run:
