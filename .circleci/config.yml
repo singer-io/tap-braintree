@@ -11,11 +11,6 @@ jobs:
   build:
     executor: docker-executor
     steps:
-      - run: echo "CI Done"
-
-  ensure_env:
-    executor: docker-executor
-    steps:
       - checkout
       - run:
           name: 'Setup'
@@ -39,6 +34,4 @@ workflows:
   commit:
     jobs:
       - build:
-          context: circleci-user
-      - ensure_env:
           context: circleci-user
