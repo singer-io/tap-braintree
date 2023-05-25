@@ -63,6 +63,9 @@
         "subscription_id": {
             "type": ["null", "string"]
         },
+        "purchase_order_number": {
+            "type": ["null", "string"]
+        },
         "customer_details": {
             "type": "object",
             "properties": {
