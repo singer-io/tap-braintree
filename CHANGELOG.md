@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.3
+  * Dependabot update [#46](https://github.com/singer-io/tap-braintree/pull/46)
+
 ## 0.9.2
   * Update Braintree python SDK version to 4.18.1 [#45](https://github.com/singer-io/tap-braintree/pull/45)
 
