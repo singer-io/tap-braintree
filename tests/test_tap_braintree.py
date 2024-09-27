@@ -5,6 +5,35 @@ import pytz
 from datetime import datetime, timedelta
 
 
+# Converts a dict into a Python object
+class MockObject(object):
+    def __init__(self, d):
+        self.__dict__ = d
+
+
+class TestTransform(unittest.TestCase):
+
+    def test_transaction_custom_fields(self):
+        """
+        Transactions may contain custom fields, which are represented
+        as key-value pairs with unkown schema.
+        """
+
+        schema = tap_braintree.load_schema("transactions")
+
+        transaction_row = MockObject({
+            'id': 'id123',
+            'created_at': '2020-04-27T22:04:48.000000Z',
+            'custom_fields': {
+                'key1': 'value1',
+                'key2': 2
+            }
+        })
+
+        output = tap_braintree.transform_row(transaction_row, schema)
+        self.assertEqual(transaction_row.custom_fields, output['custom_fields'])
+
+
 class TestDateRangeUtility(unittest.TestCase):
 
     def test_daterange_normal(self):
