@@ -1,7 +1,6 @@
 import pytz
 import singer
 from datetime import datetime, timedelta
-from .transform import transform_row
 
 TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
