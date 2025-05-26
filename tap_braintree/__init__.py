@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import json
+import sys
 from datetime import datetime, timedelta
 import os
 import pytz
@@ -9,6 +11,7 @@ import braintree
 import singer
 
 from singer import utils
+from tap_braintree.discover import discover
 from .transform import transform_row
 
 
@@ -199,6 +202,13 @@ def sync_transactions():
     singer.write_state(STATE)
 
 
+def do_discover():
+    logger.info("Starting discovery")
+    catalog = discover()
+    json.dump(catalog, sys.stdout, indent=2)
+    logger.info("Finished discover")
+
+
 def do_sync():
     logger.info("Starting sync")
     sync_transactions()
@@ -224,7 +234,10 @@ def main():
         STATE.update(args.state)
 
     try:
-        do_sync()
+        if args.discover:
+            do_discover()
+        else:
+            do_sync()
     except braintree.exceptions.authentication_error.AuthenticationError:
         logger.critical('Authentication error occured. '
                         'Please check your merchant_id, public_key, and '
