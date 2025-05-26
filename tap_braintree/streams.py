@@ -7,6 +7,7 @@ TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 LOGGER = singer.get_logger()
 
+
 class Stream:
     name = None
     replication_method = None
@@ -15,7 +16,7 @@ class Stream:
     parent_stream = None
 
     # To write schema in output
-    def write_schema(self, schema, stream_name, sync_streams , selected_streams):
+    def write_schema(self, schema, stream_name, sync_streams, selected_streams):
         """
         To write schema in output
         """
@@ -24,28 +25,28 @@ class Stream:
             if stream_name in selected_streams and stream_name in sync_streams:
                 singer.write_schema(stream_name, schema, self.key_properties)
         except OSError as err:
-            LOGGER.error('OS Error writing schema for: {}'.format(stream_name))
+            LOGGER.error("OS Error writing schema for: {}".format(stream_name))
             raise err
-    
+
     def to_utc(self, dt):
         """
         Set UTC offset for Python datetime object
         """
         return dt.replace(tzinfo=pytz.UTC)
-    
+
     def write_bookmark(self, state, stream, value):
         """
         To write bookmark in sync mode
         """
 
-        if 'bookmarks' not in state:
-            state['bookmarks'] = {}
-        if stream not in state['bookmarks']:
-            state['bookmarks'][stream] = {}
-            
-        state['bookmarks'][stream] = value
+        if "bookmarks" not in state:
+            state["bookmarks"] = {}
+        if stream not in state["bookmarks"]:
+            state["bookmarks"][stream] = {}
+
+        state["bookmarks"][stream] = value
         singer.write_state(state)
-        
+
     def daterange(self, start_date, end_date):
         """
         Generator function that produces an iterable list of days between the two
@@ -70,7 +71,7 @@ class Stream:
         start_date = self.to_utc(
             datetime.combine(
                 start_date.date(),
-                datetime.min.time()  # set to the 0:00 on the day of the start date
+                datetime.min.time(),  # set to the 0:00 on the day of the start date
             )
         )
         end_date = self.to_utc(end_date + timedelta(1))
@@ -86,6 +87,4 @@ class Transaction(Stream):
     replication_method = "INCREMENTAL"
 
 
-STREAMS = {
-    "transactions": Transaction
-}
+STREAMS = {"transactions": Transaction}
