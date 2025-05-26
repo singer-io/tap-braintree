@@ -14,6 +14,7 @@ from singer import utils
 from tap_braintree.discover import discover
 from .transform import transform_row
 
+TIME_OUT = 300
 
 CONFIG = {}
 STATE = {}
@@ -222,10 +223,21 @@ def main():
     )
     config = args.config
 
+    try:
+        # Take value of timeout if provided in config else take default value
+        timeout = float(config.get("timeout", TIME_OUT))
+
+        if timeout == 0:
+            # Raise error when timeout is given as 0 in config
+            raise ValueError()
+    except ValueError:
+        raise ValueError('Please provide a value greater than 0 for the timeout parameter in config')
+
     environment = getattr(
         braintree.Environment, config.pop("environment", "Production")
     )
 
+    config["timeout"] = timeout
     CONFIG['start_date'] = config.pop('start_date')
 
     braintree.Configuration.configure(environment, **config)
