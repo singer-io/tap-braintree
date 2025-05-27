@@ -3,14 +3,15 @@ from unittest import mock
 from tap_braintree import main
 
 
-class Mocked():
-    ''' Class to initialize required variables'''
+class Mocked:
+    """Class to initialize required variables"""
+
     def __init__(self):
         self.config = {
             "merchant_id": "test",
             "public_key": "test",
             "private_key": "test",
-            "start_date": "2017-01-17T20:32:05Z"
+            "start_date": "2017-01-17T20:32:05Z",
         }
         self.state = {}
         self.catalog = {}
@@ -23,14 +24,16 @@ class Mocked():
 @mock.patch("tap_braintree.braintree.Configuration.configure")
 @mock.patch("tap_braintree.utils.parse_args")
 class TestTimeout(unittest.TestCase):
-    '''
+    """
     Test class to validate fetched request_timeout value
-    '''
+    """
 
-    def test_timeout_invalid_value_zero_integer(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
-        '''
+    def test_timeout_invalid_value_zero_integer(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
+        """
         Test zero integer request_timeout should raise ValueError
-        '''
+        """
         mocked_obj = Mocked()
         mocked_obj.config.update({"request_timeout": 0})
         mocked_parse_args.return_value = mocked_obj
@@ -39,27 +42,42 @@ class TestTimeout(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             main()
 
-        self.assertEqual(str(e.exception), "Please provide a value greater than 0 for the request_timeout parameter in config")
+        self.assertEqual(
+            str(e.exception),
+            "Please provide a value greater than 0 for the request_timeout parameter in config",
+        )
 
-    def test_timeout_invalid_value_string_zero(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
+    def test_timeout_invalid_value_string_zero(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
         mocked_obj = Mocked()
         mocked_obj.config.update({"request_timeout": "0"})
         mocked_parse_args.return_value = mocked_obj
         mocked_environment.return_value = mocked_obj
         with self.assertRaises(ValueError) as e:
             main()
-        self.assertEqual(str(e.exception), "Please provide a value greater than 0 for the request_timeout parameter in config")
+        self.assertEqual(
+            str(e.exception),
+            "Please provide a value greater than 0 for the request_timeout parameter in config",
+        )
 
-    def test_timeout_invalid_value_invalid_string(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
+    def test_timeout_invalid_value_invalid_string(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
         mocked_obj = Mocked()
         mocked_obj.config.update({"request_timeout": "abc"})
         mocked_parse_args.return_value = mocked_obj
         mocked_environment.return_value = mocked_obj
         with self.assertRaises(ValueError) as e:
             main()
-        self.assertEqual(str(e.exception), "Please provide a value greater than 0 for the request_timeout parameter in config")
+        self.assertEqual(
+            str(e.exception),
+            "Please provide a value greater than 0 for the request_timeout parameter in config",
+        )
 
-    def test_timeout_no_value_in_config(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
+    def test_timeout_no_value_in_config(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
         """
         Test when request_timeout is not provided in config
         """
@@ -76,5 +94,5 @@ class TestTimeout(unittest.TestCase):
             merchant_id="test",
             public_key="test",
             private_key="test",
-            timeout=300.0
+            timeout=300.0,
         )
