@@ -233,6 +233,15 @@ def main():
     if args.state:
         STATE.update(args.state)
 
+    # Generate a client token to verify credentials
+    try:
+        braintree.ClientToken.generate()
+        logger.info("Braintree configuration is valid. Token generated.")
+    except braintree.exceptions.authentication_error.AuthenticationError:
+        logger.info("Authentication error: Check your credentials.")
+    except Exception as e:
+        logger.info(f"Configuration error: {e}")
+
     try:
         if args.discover:
             do_discover()
