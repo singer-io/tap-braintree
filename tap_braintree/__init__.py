@@ -200,6 +200,15 @@ def sync_transactions():
 
 
 def do_discover():
+    # Generate a client token to verify credentials
+    try:
+        braintree.ClientToken.generate()
+        logger.info("Braintree configuration is valid. Token generated.")
+    except braintree.exceptions.authentication_error.AuthenticationError:
+        logger.info("Authentication error: Check your credentials.")
+    except Exception as e:
+        logger.info(f"Configuration error: {e}")
+
     logger.info("Starting discovery")
     catalog = discover()
     json.dump(catalog, sys.stdout, indent=2)
@@ -229,15 +238,6 @@ def main():
 
     if args.state:
         STATE.update(args.state)
-
-    # Generate a client token to verify credentials
-    try:
-        braintree.ClientToken.generate()
-        logger.info("Braintree configuration is valid. Token generated.")
-    except braintree.exceptions.authentication_error.AuthenticationError:
-        logger.info("Authentication error: Check your credentials.")
-    except Exception as e:
-        logger.info(f"Configuration error: {e}")
 
     try:
         if args.discover:
