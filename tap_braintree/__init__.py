@@ -8,11 +8,18 @@ import pytz
 
 
 import braintree
+import backoff
 import singer
 
 from singer import utils
 from tap_braintree.discover import discover
 from .transform import transform_row
+
+from braintree.exceptions.too_many_requests_error import TooManyRequestsError
+from braintree.exceptions.server_error import ServerError
+from braintree.exceptions.service_unavailable_error import ServiceUnavailableError
+from braintree.exceptions.gateway_timeout_error import GatewayTimeoutError
+
 
 REQUEST_TIMEOUT = 300
 
@@ -77,6 +84,27 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n), start_date + timedelta(n + 1)
 
 
+# Backoff the request for 5 times when ConnectionError, TooManyRequestsError (status code = 429),
+# ServerError(status code = 500, 502) , ServiceUnavailableError (status code = 503) ,
+# or GatewayTimeoutError (status code = 504) occurs
+@backoff.on_exception(
+    backoff.expo,
+    (
+        ConnectionError,
+        TooManyRequestsError,
+        ServerError,
+        ServiceUnavailableError,
+        GatewayTimeoutError,
+    ),
+    max_tries=5,
+    factor=2,
+)
+def get_transactions_data(start, end):
+    return braintree.Transaction.search(
+        braintree.TransactionSearch.created_at.between(start, end)
+    )
+
+
 def sync_transactions():
     schema = load_schema("transactions")
 
@@ -112,8 +140,7 @@ def sync_transactions():
 
         end = min(end, period_end)
 
-        data = braintree.Transaction.search(
-            braintree.TransactionSearch.created_at.between(start, end))
+        data = get_transactions_data(start, end)
         time_extracted = utils.now()
 
         logger.info("transactions: Fetched {} records from {} - {}".format(
