@@ -157,11 +157,8 @@ def sync_transactions():
                 disbursement_date >= latest_disbursement_date
             ):
 
-                if updated_at > run_maximum_updated_at:
-                    run_maximum_updated_at = updated_at
-
-                if disbursement_date > run_maximum_disbursement_date:
-                    run_maximum_disbursement_date = disbursement_date
+                run_maximum_updated_at = max(run_maximum_updated_at, updated_at)
+                run_maximum_disbursement_date = max(run_maximum_disbursement_date, disbursement_date)
 
                 singer.write_record("transactions", transformed,
                                     time_extracted=time_extracted)
