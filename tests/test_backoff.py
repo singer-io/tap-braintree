@@ -5,10 +5,12 @@ from braintree.exceptions import ServerError
 
 
 class TestGetTransactionsDataBackoff(unittest.TestCase):
-    @mock.patch("tap_braintree.__init__.get_transactions_data")
-    @mock.patch("tap_braintree.__init__.braintree.Transaction.search")
+    # @mock.patch("tap_braintree.__init__.get_transactions_data")
+    @mock.patch("tap_braintree.braintree.Transaction.search")
     def test_retries_on_server_error(
-        self, mock_transaction_search, mock_get_transactions_data
+        self,
+        mock_transaction_search,
+        # mock_get_transactions_data
     ):
         # Configure the mock to raise ServerError on the first two calls, then succeed
         mock_transaction_search.side_effect = [ServerError(), ServerError(), "success"]
