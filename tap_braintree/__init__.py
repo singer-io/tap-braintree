@@ -258,7 +258,7 @@ def main():
 
     try:
         # Take value of request_timeout if provided in config else take default value
-        request_timeout = float(config.get("request_timeout", REQUEST_TIMEOUT))
+        request_timeout = float(config.pop("request_timeout", REQUEST_TIMEOUT))
 
         if request_timeout == 0:
             # Raise error when request_timeout is given as 0 in config

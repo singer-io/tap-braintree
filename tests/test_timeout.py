@@ -96,3 +96,47 @@ class TestTimeout(unittest.TestCase):
             private_key="test",
             timeout=300.0,
         )
+
+    def test_timeout_valid_string_type_value_in_config(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
+        """
+        Test when request_timeout is provided as a string in config
+        """
+        mocked_obj = Mocked()
+        mocked_obj.config.update({"request_timeout": "200", "environment": "Sandbox"})
+
+        mocked_parse_args.return_value = mocked_obj
+        mocked_environment.return_value = mocked_obj
+
+        main()
+
+        mocked_configure.assert_called_with(
+            mocked_environment.Sandbox,
+            merchant_id="test",
+            public_key="test",
+            private_key="test",
+            timeout=200.0,
+        )
+
+    def test_timeout_valid_integer_type_value_in_config(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
+        """
+        Test when request_timeout is provided as an integer in config
+        """
+        mocked_obj = Mocked()
+        mocked_obj.config.update({"request_timeout": 200, "environment": "Sandbox"})
+
+        mocked_parse_args.return_value = mocked_obj
+        mocked_environment.return_value = mocked_obj
+
+        main()
+
+        mocked_configure.assert_called_with(
+            mocked_environment.Sandbox,
+            merchant_id="test",
+            public_key="test",
+            private_key="test",
+            timeout=200.0,
+        )
