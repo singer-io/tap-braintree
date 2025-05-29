@@ -203,11 +203,11 @@ def do_discover():
     # Generate a client token to verify credentials
     try:
         braintree.ClientToken.generate()
-        logger.info("Braintree configuration is valid. Token generated.")
-    except braintree.exceptions.authentication_error.AuthenticationError:
-        logger.info("Authentication error: Check your credentials.")
-    except Exception as e:
-        logger.info(f"Configuration error: {e}")
+        logger.info("Braintree configuration is valid.")
+    except braintree.exceptions.authentication_error.AuthenticationError as ex:
+        raise Exception("Authentication error: Check your credentials.") from ex
+    except Exception:
+        raise Exception("Unexpected error during Braintree configuration validation.")
 
     logger.info("Starting discovery")
     catalog = discover()
