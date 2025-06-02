@@ -84,9 +84,6 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n), start_date + timedelta(n + 1)
 
 
-# Backoff the request for 5 times when ConnectionError, TooManyRequestsError (status code = 429),
-# ServerError(status code = 500, 502) , ServiceUnavailableError (status code = 503) ,
-# or GatewayTimeoutError (status code = 504) occurs
 @backoff.on_exception(
     backoff.expo,
     (
@@ -239,7 +236,11 @@ def do_discover():
 
     logger.info("Starting discovery")
     catalog = discover()
-    json.dump(catalog, sys.stdout, indent=2)
+
+    sys.stdout.reconfigure(encoding='utf-8')
+    json.dump(catalog, sys.stdout, indent=2, ensure_ascii=False)
+
+    # json.dump(catalog, sys.stdout, indent=2)
     logger.info("Finished discover")
 
 
