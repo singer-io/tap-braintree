@@ -236,11 +236,7 @@ def do_discover():
 
     logger.info("Starting discovery")
     catalog = discover()
-
-    sys.stdout.reconfigure(encoding='utf-8')
-    json.dump(catalog, sys.stdout, indent=2, ensure_ascii=False)
-
-    # json.dump(catalog, sys.stdout, indent=2)
+    json.dump(catalog, sys.stdout, indent=2)
     logger.info("Finished discover")
 
 
