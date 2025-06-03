@@ -6,10 +6,7 @@ from braintree.exceptions import ServerError
 
 class TestGetTransactionsDataBackoff(unittest.TestCase):
     @mock.patch("tap_braintree.braintree.Transaction.search")
-    def test_retries_on_server_error(
-        self,
-        mock_transaction_search
-    ):
+    def test_retries_on_server_error(self, mock_transaction_search):
         """
         Test that get_transactions_data retries on transient ServerError and succeeds after retries.
         """
@@ -20,10 +17,7 @@ class TestGetTransactionsDataBackoff(unittest.TestCase):
         self.assertEqual(mock_transaction_search.call_count, 3)
 
     @mock.patch("tap_braintree.braintree.Transaction.search")
-    def test_max_retries_reached(
-        self,
-        mock_transaction_search
-    ):
+    def test_max_retries_reached(self, mock_transaction_search):
         """
         Test that get_transactions_data raises ServerError after exceeding maximum retry attempts.
         """

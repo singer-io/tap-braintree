@@ -32,33 +32,39 @@ class TestTimeout(unittest.TestCase):
         self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
     ):
         """
-        Test zero integer request_timeout should raise ValueError
+        Test zero integer request_timeout should fallback on default value
         """
         mocked_obj = Mocked()
-        mocked_obj.config.update({"request_timeout": 0})
+        mocked_obj.config.update({"request_timeout": 0, "environment": "Sandbox"})
         mocked_parse_args.return_value = mocked_obj
         mocked_environment.return_value = mocked_obj
 
-        with self.assertRaises(ValueError) as e:
-            main()
+        main()
 
-        self.assertEqual(
-            str(e.exception),
-            "Please provide a value greater than 0 for the request_timeout parameter in config",
+        mocked_configure.assert_called_with(
+            mocked_environment.Sandbox,
+            merchant_id="test",
+            public_key="test",
+            private_key="test",
+            timeout=300,
         )
 
     def test_timeout_invalid_value_string_zero(
         self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
     ):
         mocked_obj = Mocked()
-        mocked_obj.config.update({"request_timeout": "0"})
+        mocked_obj.config.update({"request_timeout": "0", "environment": "Sandbox"})
         mocked_parse_args.return_value = mocked_obj
         mocked_environment.return_value = mocked_obj
-        with self.assertRaises(ValueError) as e:
-            main()
-        self.assertEqual(
-            str(e.exception),
-            "Please provide a value greater than 0 for the request_timeout parameter in config",
+
+        main()
+
+        mocked_configure.assert_called_with(
+            mocked_environment.Sandbox,
+            merchant_id="test",
+            public_key="test",
+            private_key="test",
+            timeout=300,
         )
 
     def test_timeout_invalid_value_invalid_string(
