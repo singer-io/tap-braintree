@@ -258,7 +258,7 @@ def main():
         request_timeout = float(config.pop("request_timeout", REQUEST_TIMEOUT))
 
         if request_timeout <= 0:
-            logger.info("Invalid value for request_timeout parameter, reverting to default setting.")
+            logger.warn("Invalid value for request_timeout parameter, reverting to default setting.")
             request_timeout = REQUEST_TIMEOUT
     except ValueError:
         raise ValueError('Please provide a value greater than 0 for the request_timeout parameter in config')
