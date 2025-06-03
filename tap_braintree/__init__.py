@@ -258,12 +258,12 @@ def main():
         request_timeout = float(config.pop("request_timeout", REQUEST_TIMEOUT))
 
         if request_timeout == 0:
-            logger.warn("Invalid value for request_timeout parameter, reverting to default setting.")
+            logger.warn(f"Invalid value for request_timeout parameter, reverting to default value {REQUEST_TIMEOUT}")
             request_timeout = REQUEST_TIMEOUT
         elif request_timeout < 0:
             raise ValueError()
     except ValueError:
-        raise ValueError('Please provide a positive value for the request_timeout parameter in config')
+        raise ValueError("Please provide a positive value for the request_timeout parameter in config")
 
     environment = getattr(
         braintree.Environment, config.pop("environment", "Production")
