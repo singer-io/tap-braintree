@@ -125,6 +125,42 @@ class TestTimeout(unittest.TestCase):
             timeout=200.0,
         )
 
+    def test_timeout_negative_string(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
+        """
+        Test request_timeout as negative string falls back to default.
+        """
+        mocked_obj = Mocked()
+        mocked_obj.config.update({"request_timeout": "-5", "environment": "Sandbox"})
+        mocked_parse_args.return_value = mocked_obj
+        mocked_environment.return_value = mocked_obj
+
+        main()
+        mocked_configure.assert_called_with(
+            mocked_environment.Sandbox,
+            merchant_id="test",
+            public_key="test",
+            private_key="test",
+            timeout=300,
+        )
+
+    def test_timeout_negative_integer(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
+        """
+        Test request_timeout as negative integer falls back to default.
+        """
+        mocked_obj = Mocked()
+        mocked_obj.config.update({"request_timeout": "-5", "environment": "Sandbox"})
+        mocked_parse_args.return_value = mocked_obj
+        mocked_environment.return_value = mocked_obj
+
+        main()
+        mocked_configure.assert_called_with(
+            mocked_environment.Sandbox,
+            merchant_id="test",
+            public_key="test",
+            private_key="test",
+            timeout=300,
+        )
+
     def test_timeout_valid_integer_type_value_in_config(
         self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
     ):
