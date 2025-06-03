@@ -10,7 +10,9 @@ class TestGetTransactionsDataBackoff(unittest.TestCase):
         self,
         mock_transaction_search
     ):
-        # Configure the mock to raise ServerError on the first two calls, then succeed
+        """
+        Test that get_transactions_data retries on transient ServerError and succeeds after retries.
+        """
         mock_transaction_search.side_effect = [ServerError(), ServerError(), "success"]
         result = get_transactions_data("2021-01-01", "2021-01-31")
 
@@ -22,11 +24,12 @@ class TestGetTransactionsDataBackoff(unittest.TestCase):
         self,
         mock_transaction_search
     ):
-        # Configure the mock to always raise ServerError
+        """
+        Test that get_transactions_data raises ServerError after exceeding maximum retry attempts.
+        """
         mock_transaction_search.side_effect = ServerError()
 
         with self.assertRaises(ServerError):
             get_transactions_data("2021-01-01", "2021-01-31")
 
-        # Assuming the backoff decorator is set to max_tries=5
         self.assertEqual(mock_transaction_search.call_count, 5)
