@@ -78,7 +78,7 @@ class TestTimeout(unittest.TestCase):
             main()
         self.assertEqual(
             str(e.exception),
-            "Please provide a value greater than 0 for the request_timeout parameter in config",
+            "Please provide a positive value for the request_timeout parameter in config",
         )
 
     def test_timeout_no_value_in_config(
@@ -103,29 +103,9 @@ class TestTimeout(unittest.TestCase):
             timeout=300.0,
         )
 
-    def test_timeout_valid_string_type_value_in_config(
+    def test_timeout_negative_string(
         self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
     ):
-        """
-        Test when request_timeout is provided as a string in config
-        """
-        mocked_obj = Mocked()
-        mocked_obj.config.update({"request_timeout": "200", "environment": "Sandbox"})
-
-        mocked_parse_args.return_value = mocked_obj
-        mocked_environment.return_value = mocked_obj
-
-        main()
-
-        mocked_configure.assert_called_with(
-            mocked_environment.Sandbox,
-            merchant_id="test",
-            public_key="test",
-            private_key="test",
-            timeout=200.0,
-        )
-
-    def test_timeout_negative_string(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
         """
         Test request_timeout as negative string falls back to default.
         """
@@ -134,51 +114,27 @@ class TestTimeout(unittest.TestCase):
         mocked_parse_args.return_value = mocked_obj
         mocked_environment.return_value = mocked_obj
 
-        main()
-        mocked_configure.assert_called_with(
-            mocked_environment.Sandbox,
-            merchant_id="test",
-            public_key="test",
-            private_key="test",
-            timeout=300,
+        with self.assertRaises(ValueError) as e:
+            main()
+        self.assertEqual(
+            str(e.exception),
+            "Please provide a positive value for the request_timeout parameter in config",
         )
 
-    def test_timeout_negative_integer(self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment):
+    def test_timeout_negative_integer(
+        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
+    ):
         """
         Test request_timeout as negative integer falls back to default.
         """
         mocked_obj = Mocked()
-        mocked_obj.config.update({"request_timeout": "-5", "environment": "Sandbox"})
+        mocked_obj.config.update({"request_timeout": -5, "environment": "Sandbox"})
         mocked_parse_args.return_value = mocked_obj
         mocked_environment.return_value = mocked_obj
 
-        main()
-        mocked_configure.assert_called_with(
-            mocked_environment.Sandbox,
-            merchant_id="test",
-            public_key="test",
-            private_key="test",
-            timeout=300,
-        )
-
-    def test_timeout_valid_integer_type_value_in_config(
-        self, mocked_parse_args, mocked_configure, mocked_discover, mocked_environment
-    ):
-        """
-        Test when request_timeout is provided as an integer in config
-        """
-        mocked_obj = Mocked()
-        mocked_obj.config.update({"request_timeout": 200, "environment": "Sandbox"})
-
-        mocked_parse_args.return_value = mocked_obj
-        mocked_environment.return_value = mocked_obj
-
-        main()
-
-        mocked_configure.assert_called_with(
-            mocked_environment.Sandbox,
-            merchant_id="test",
-            public_key="test",
-            private_key="test",
-            timeout=200.0,
+        with self.assertRaises(ValueError) as e:
+            main()
+        self.assertEqual(
+            str(e.exception),
+            "Please provide a positive value for the request_timeout parameter in config",
         )
