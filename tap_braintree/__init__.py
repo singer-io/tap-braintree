@@ -8,12 +8,20 @@ import pytz
 
 
 import braintree
+import backoff
 import singer
 
 from singer import utils
 from tap_braintree.discover import discover
 from .transform import transform_row
 
+from braintree.exceptions.too_many_requests_error import TooManyRequestsError
+from braintree.exceptions.server_error import ServerError
+from braintree.exceptions.service_unavailable_error import ServiceUnavailableError
+from braintree.exceptions.gateway_timeout_error import GatewayTimeoutError
+
+
+REQUEST_TIMEOUT = 300
 
 CONFIG = {}
 STATE = {}
@@ -76,6 +84,24 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n), start_date + timedelta(n + 1)
 
 
+@backoff.on_exception(
+    backoff.expo,
+    (
+        ConnectionError,
+        TooManyRequestsError,
+        ServerError,
+        ServiceUnavailableError,
+        GatewayTimeoutError,
+    ),
+    max_tries=5,
+    factor=2,
+)
+def get_transactions_data(start, end):
+    return braintree.Transaction.search(
+        braintree.TransactionSearch.created_at.between(start, end)
+    )
+
+
 def sync_transactions():
     schema = load_schema("transactions")
 
@@ -111,8 +137,7 @@ def sync_transactions():
 
         end = min(end, period_end)
 
-        data = braintree.Transaction.search(
-            braintree.TransactionSearch.created_at.between(start, end))
+        data = get_transactions_data(start, end)
         time_extracted = utils.now()
 
         logger.info("transactions: Fetched {} records from {} - {}".format(
@@ -228,10 +253,23 @@ def main():
     )
     config = args.config
 
+    try:
+        # Take value of request_timeout if provided in config else take default value
+        request_timeout = float(config.pop("request_timeout", REQUEST_TIMEOUT))
+
+        if request_timeout == 0:
+            logger.warn(f"Invalid value for request_timeout parameter, reverting to default value {REQUEST_TIMEOUT}")
+            request_timeout = REQUEST_TIMEOUT
+        elif request_timeout < 0:
+            raise ValueError()
+    except ValueError:
+        raise ValueError("Please provide a positive value for the request_timeout parameter in config")
+
     environment = getattr(
         braintree.Environment, config.pop("environment", "Production")
     )
 
+    config["timeout"] = request_timeout
     CONFIG['start_date'] = config.pop('start_date')
 
     braintree.Configuration.configure(environment, **config)
