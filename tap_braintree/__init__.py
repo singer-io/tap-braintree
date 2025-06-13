@@ -263,7 +263,7 @@ def main():
         logger.warning(f"Invalid value for request_timeout; reverting to default {REQUEST_TIMEOUT}")
         request_timeout = REQUEST_TIMEOUT
     elif request_timeout < 0:
-        raise ValueError("Please provide a positive value for `request_timeout`")
+        raise ValueError("Please provide a positive number for `request_timeout`")
 
     environment = getattr(
         braintree.Environment, config.pop("environment", "Production")

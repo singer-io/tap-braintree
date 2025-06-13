@@ -78,7 +78,7 @@ class TestTimeout(unittest.TestCase):
             main()
         self.assertEqual(
             str(e.exception),
-            "Please provide a positive value for the request_timeout parameter in config",
+            "Please provide a positive number for `request_timeout`",
         )
 
     def test_timeout_no_value_in_config(
@@ -118,7 +118,7 @@ class TestTimeout(unittest.TestCase):
             main()
         self.assertEqual(
             str(e.exception),
-            "Please provide a positive value for the request_timeout parameter in config",
+            "Please provide a positive number for `request_timeout`",
         )
 
     def test_timeout_negative_integer(
@@ -136,5 +136,5 @@ class TestTimeout(unittest.TestCase):
             main()
         self.assertEqual(
             str(e.exception),
-            "Please provide a positive value for the request_timeout parameter in config",
+            "Please provide a positive number for `request_timeout`",
         )
