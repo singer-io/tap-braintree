@@ -15,6 +15,7 @@ from singer import utils
 from tap_braintree.discover import discover
 from .transform import transform_row
 
+from braintree.exceptions.authentication_error import AuthenticationError
 from braintree.exceptions.too_many_requests_error import TooManyRequestsError
 from braintree.exceptions.server_error import ServerError
 from braintree.exceptions.service_unavailable_error import ServiceUnavailableError
@@ -272,20 +273,22 @@ def main():
     config["timeout"] = request_timeout
     CONFIG['start_date'] = config.pop('start_date')
 
-    braintree.Configuration.configure(environment, **config)
-
     if args.state:
         STATE.update(args.state)
 
     try:
+        braintree.Configuration.configure(environment, **config)
+
         if args.discover:
             do_discover()
         else:
             do_sync()
-    except braintree.exceptions.authentication_error.AuthenticationError:
+    except AuthenticationError:
         logger.critical('Authentication error occured. '
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
+    except Exception as e:
+        raise Exception(f"Unexpected error during Braintree validation: {e}.")
 
 
 if __name__ == '__main__':
