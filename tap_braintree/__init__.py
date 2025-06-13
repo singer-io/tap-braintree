@@ -278,7 +278,6 @@ def main():
 
     try:
         braintree.Configuration.configure(environment, **config)
-
         if args.discover:
             do_discover()
         else:
@@ -287,8 +286,10 @@ def main():
         logger.critical('Authentication error occured. '
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
-    except Exception as e:
-        raise Exception(f"Unexpected error during Braintree validation: {e}.")
+    except TypeError as type_err:
+        raise TypeError("Missing or malformed Braintree config") from type_err
+    except Exception as ex:
+        raise RuntimeError("Unexpected error during Braintree validation") from ex
 
 
 if __name__ == '__main__':
