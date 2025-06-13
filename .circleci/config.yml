@@ -23,6 +23,11 @@ jobs:
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
             pylint tap_braintree -d C,R,W
       - run:
+          name: 'JSON Validator'
+          command: |
+            source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            stitch-validate-json tap_braintree/schemas/*.json
+      - run:
           name: 'Unit Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
