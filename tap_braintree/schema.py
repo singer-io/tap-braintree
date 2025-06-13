@@ -28,29 +28,19 @@ def get_schemas():
         schemas[stream_name] = schema
 
         mdata = metadata.new()
-
         mdata = metadata.get_standard_metadata(
             schema=schema,
-            key_properties=stream_metadata.key_properties,
-            valid_replication_keys=stream_metadata.replication_keys,
-            replication_method=stream_metadata.replication_method,
+            key_properties=getattr(stream_metadata, "key_properties"),
+            valid_replication_keys=(getattr(stream_metadata, "replication_keys") or []),
+            replication_method=getattr(stream_metadata, "replication_method"),
         )
-
         mdata = metadata.to_map(mdata)
-        # Loop through all keys and make replication keys of automatic inclusion
+        automatic_keys = getattr(stream_metadata, "replication_keys") or []
         for field_name in schema["properties"].keys():
-
-            if (
-                stream_metadata.replication_keys
-                and field_name in stream_metadata.replication_keys
-            ):
+            if field_name in automatic_keys:
                 mdata = metadata.write(
-                    mdata,
-                    ("properties", field_name),
-                    "inclusion",
-                    "automatic",
+                    mdata, ("properties", field_name), "inclusion", "automatic"
                 )
-
         mdata = metadata.to_list(mdata)
         field_metadata[stream_name] = mdata
 

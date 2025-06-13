@@ -1,29 +1,34 @@
 import singer
-from tap_braintree.streams import STREAMS
+from singer import metadata
+from singer.catalog import Catalog, CatalogEntry, Schema
+
 from tap_braintree.schema import get_schemas
 
 LOGGER = singer.get_logger()
 
 
-def discover():
-    """
-    Run the discover mode, prepare the catalog file and return the catalog
-    """
-
+def discover() -> Catalog:
+    """Run the discovery mode, prepare the catalog file and return the
+    catalog."""
     schemas, field_metadata = get_schemas()
-    streams = []
-
+    catalog = Catalog([])
     for stream_name, schema_dict in schemas.items():
-        mdata = field_metadata[stream_name]
-
-        catalog_entry = {
-            "stream": stream_name,
-            "tap_stream_id": stream_name,
-            "key_properties": STREAMS[stream_name].key_properties,
-            "schema": singer.resolve_schema_references(schema_dict),
-            "metadata": mdata,
-        }
-
-        streams.append(catalog_entry)
-
-    return {"streams": streams}
+        try:
+            schema = Schema.from_dict(schema_dict)
+            mdata = field_metadata[stream_name]
+        except Exception as err:
+            LOGGER.error(err)
+            LOGGER.error(f"stream_name: {stream_name}")
+            LOGGER.error(f"type schema_dict: {type(schema_dict)}")
+            raise err
+        key_properties = metadata.to_map(mdata).get((), {}).get("table-key-properties")
+        catalog.streams.append(
+            CatalogEntry(
+                stream=stream_name,
+                tap_stream_id=stream_name,
+                key_properties=key_properties,
+                schema=schema,
+                metadata=mdata,
+            )
+        )
+    return catalog

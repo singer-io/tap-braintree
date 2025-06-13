@@ -236,7 +236,7 @@ def do_discover():
 
     logger.info("Starting discovery")
     catalog = discover()
-    json.dump(catalog, sys.stdout, indent=2)
+    json.dump(catalog.to_dict(), sys.stdout, indent=2)
     logger.info("Finished discover")
 
 
