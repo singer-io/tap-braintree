@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.4
+  * Bump dependency versions for twistlock compliance [#56](https://github.com/singer-io/tap-braintree/pull/56)
+
 ## 0.9.3
   * Dependabot update [#46](https://github.com/singer-io/tap-braintree/pull/46)
 
