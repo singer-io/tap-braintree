@@ -21,7 +21,7 @@ jobs:
           name: 'Pylint'
           command: |
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
-            pylint tap_braintree --disable missing-docstring,logging-format-interpolation,no-member,broad-except,redefined-variable-type,too-many-branches,too-few-public-methods,wrong-import-order,too-many-locals,line-too-long,invalid-name,bare-except,no-else-raise,cyclic-import,bad-continuation,undefined-loop-variable,consider-using-f-string
+            pylint tap_braintree --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,too-few-public-methods,wrong-import-order,too-many-locals,line-too-long,invalid-name,bare-except,no-else-raise,cyclic-import,undefined-loop-variable,consider-using-f-string
       - run:
           name: 'Unit Tests'
           command: |
