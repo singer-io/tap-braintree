@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.5
+  * Replace unnecessary if blocks with max() [#57](https://github.com/singer-io/tap-braintree/pull/57)
+
 ## 0.9.4
   * Bump dependency versions for twistlock compliance [#56](https://github.com/singer-io/tap-braintree/pull/56)
 
