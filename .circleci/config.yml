@@ -13,7 +13,7 @@ jobs:
       - run:
           name: 'Setup'
           command: |
-            uv venv --python 3.9 /usr/local/share/virtualenvs/tap-braintree
+            uv venv --python 3.12 /usr/local/share/virtualenvs/tap-braintree
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
             uv pip install -U 'pip<19.2' setuptools
             uv pip install .[dev]
