@@ -184,6 +184,7 @@ def sync_transactions():
             ):
 
                 run_maximum_updated_at = max(run_maximum_updated_at, updated_at)
+
                 run_maximum_disbursement_date = max(run_maximum_disbursement_date, disbursement_date)
 
                 singer.write_record("transactions", transformed,
