@@ -281,7 +281,7 @@ def main():
         braintree.Configuration.configure(environment, **config)
         if args.discover:
             do_discover()
-        else:
+        elif args.catalog:
             do_sync()
     except AuthenticationError:
         logger.critical('Authentication error occured. '
