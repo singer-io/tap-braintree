@@ -21,7 +21,12 @@ jobs:
           name: 'Pylint'
           command: |
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
-            pylint tap_braintree --disable missing-docstring,logging-format-interpolation,no-member,broad-except,too-many-branches,too-few-public-methods,wrong-import-order,too-many-locals,line-too-long,invalid-name,bare-except,no-else-raise,cyclic-import,undefined-loop-variable,consider-using-f-string
+            pylint tap_braintree -d C,R,W
+      - run:
+          name: 'JSON Validator'
+          command: |
+            source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            stitch-validate-json tap_braintree/schemas/*.json
       - run:
           name: 'Unit Tests'
           command: |
