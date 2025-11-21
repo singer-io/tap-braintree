@@ -3,6 +3,7 @@
 import json
 import sys
 from datetime import datetime, timedelta
+import argparse
 import os
 import pytz
 
@@ -250,10 +251,21 @@ def do_sync():
 
 @utils.handle_top_exception(logger)
 def main():
-    args = utils.parse_args(
-        ["merchant_id", "public_key", "private_key", "start_date"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', '--config', help='Config file', required=True)
+    parser.add_argument(
+        '-s', '--state', help='State file')
+
+    args = parser.parse_args()
+    if args.config:
+        config = singer.utils.load_json(args.config)
+    else:
+        config = {}
+
+    singer.utils.check_config(
+        config, ["merchant_id", "public_key", "private_key", "start_date"]
     )
-    config = args.config
 
     try:
         raw = config.pop("request_timeout", REQUEST_TIMEOUT)
@@ -275,7 +287,7 @@ def main():
     CONFIG['start_date'] = config.pop('start_date')
 
     if args.state:
-        STATE.update(args.state)
+        STATE.update(singer.utils.load_json(args.state))
 
     try:
         braintree.Configuration.configure(environment, **config)
