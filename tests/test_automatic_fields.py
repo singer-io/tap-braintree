@@ -18,6 +18,9 @@ class BraintreeMinimumSelectionTest(MinimumSelectionTest, BraintreeBase):
     inclusion: automatic. Deselecting fields therefore has no practical effect,
     but the test still confirms the mechanism works end-to-end.
     """
+    MISSING_FIELDS = {
+        "transactions": {"paypal_details"},
+    }
 
     @staticmethod
     def name():

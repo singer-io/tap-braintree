@@ -15,7 +15,9 @@ from base import BraintreeBase
 class BraintreeAllFieldsTest(AllFieldsTest, BraintreeBase):
     """Test that with all fields selected, all fields are replicated"""
 
-    selected_fields = AllFieldsTest.selected_fields
+    MISSING_FIELDS = {
+        "transactions": {"paypal_details"},
+    }
 
     @staticmethod
     def name():

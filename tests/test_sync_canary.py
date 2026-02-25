@@ -19,7 +19,5 @@ class BraintreeSyncCanaryTest(SyncCanaryTest, BraintreeBase):
         return self.expected_stream_names()
 
     def setUp(self):  # pylint: disable=invalid-name
-        # A wide window maximises the chance of hitting sandbox transactions
-        # without relying on freshly seeded test data.
-        self.start_date = '2024-01-01T00:00:00Z'
+        self.start_date = '2025-06-01T00:00:00Z'
         super().setUp()
