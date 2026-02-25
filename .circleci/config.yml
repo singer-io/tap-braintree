@@ -28,6 +28,13 @@ jobs:
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
             uv pip install pytest
             pytest tests/unittests
+      - run:
+          when: always
+          name: 'Integration Tests'
+          command: |
+            source /usr/local/share/virtualenvs/tap-tester/bin/activate
+            source dev_env.sh
+            run-test --tap=tap-braintree tests
 workflows:
   version: 2
   commit:
