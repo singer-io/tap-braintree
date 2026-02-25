@@ -21,10 +21,10 @@ class BraintreeBookmarkTest(BookmarkTest, BraintreeBase):
     # below every threshold; an absent key is treated as epoch and defeats the test.
     initial_bookmarks = {
         'bookmarks': {
-            'transactions': '2024-03-01T00:00:00.000000Z',
+            'transactions': '2025-03-01T00:00:00.000000Z',
         },
-        'latest_updated_at': '2024-03-01T00:00:00.000000Z',
-        'latest_disbursement_date': '2024-03-01T00:00:00.000000Z',
+        'latest_updated_at': '2025-03-01T00:00:00.000000Z',
+        'latest_disbursement_date': '2025-03-01T00:00:00.000000Z',
     }
 
     @staticmethod

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 from datetime import datetime, timedelta
 import os
 import pytz
@@ -8,7 +9,8 @@ import pytz
 import braintree
 import singer
 
-from singer import utils
+from singer import utils, metadata
+from singer.catalog import Catalog, CatalogEntry, Schema
 from .transform import transform_row
 
 
@@ -197,6 +199,31 @@ def sync_transactions():
     singer.write_state(STATE)
 
 
+def do_discover():
+    schema_dict = load_schema("transactions")
+    schema = Schema.from_dict(schema_dict)
+    mdata = metadata.get_standard_metadata(
+        schema_dict,
+        key_properties=["id"],
+        valid_replication_keys=["updated_at"],
+        replication_method="INCREMENTAL",
+    )
+    mdata = metadata.to_map(mdata)
+    for field_name in schema_dict["properties"].keys():
+        mdata = metadata.write(mdata, ("properties", field_name), "inclusion", "automatic")
+    catalog = Catalog([
+        CatalogEntry(
+            stream="transactions",
+            tap_stream_id="transactions",
+            key_properties=["id"],
+            schema=schema,
+            metadata=metadata.to_list(mdata),
+        )
+    ])
+    catalog.dump()
+    print()
+
+
 def do_sync():
     logger.info("Starting sync")
     sync_transactions()
@@ -218,6 +245,10 @@ def main():
     CONFIG['end_date'] = config.pop('end_date', None)
 
     braintree.Configuration.configure(environment, **config)
+
+    if args.discover:
+        do_discover()
+        return
 
     if args.state:
         STATE.update(args.state)

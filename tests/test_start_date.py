@@ -25,8 +25,8 @@ class BraintreeStartDateTest(StartDateTest, BraintreeBase):
 
     @property
     def start_date_1(self):
-        return '2024-01-01T00:00:00Z'
+        return '2025-06-01T00:00:00Z'
 
     @property
     def start_date_2(self):
-        return '2024-06-01T00:00:00Z'
+        return '2025-06-01T00:00:00Z'

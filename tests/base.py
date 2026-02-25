@@ -59,12 +59,38 @@ class BraintreeBase(BaseCase):
     @staticmethod
     def expected_automatic_fields(stream=None):
         """
-        Without id, records cannot be deduplicated downstream.
-        Without created_at and updated_at, the tap cannot bound its query
-        window or filter already-seen records, breaking incremental sync.
+        do_discover() marks every field inclusion: automatic, so all top-level
+        schema fields are replicated regardless of field selection. This means
+        the minimum-selection test and the all-fields test cover the same surface.
         """
         automatic_fields = {
-            'transactions': {'id', 'created_at', 'updated_at'},
+            'transactions': {
+                'id',
+                'created_at',
+                'updated_at',
+                'settlement_batch_id',
+                'status',
+                'type',
+                'amount',
+                'payment_instrument_type',
+                'service_fee_amount',
+                'order_id',
+                'plan_id',
+                'gateway_rejection_reason',
+                'processor_authorization_code',
+                'processor_response_code',
+                'processor_response_text',
+                'recurring',
+                'refunded_transaction_id',
+                'currency_iso_code',
+                'merchant_account_id',
+                'subscription_id',
+                'customer_details',
+                'credit_card_details',
+                'subscription_details',
+                'disbursement_details',
+                'paypal_details',
+            },
         }
         if stream:
             return automatic_fields[stream]
