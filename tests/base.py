@@ -14,7 +14,7 @@ class BraintreeBase(BaseCase):
     """
 
     # Chosen to coincide with a period that has known sandbox transactions.
-    start_date = '2024-01-01T00:00:00Z'
+    start_date = '2025-06-01T00:00:00Z'
 
     @staticmethod
     def tap_name():
@@ -27,9 +27,8 @@ class BraintreeBase(BaseCase):
     def get_properties(self):
         return {
             'start_date': self.start_date,
-            # Sandbox isolates test runs from production data and avoids
-            # incurring real transaction costs during CI.
             'environment': 'Sandbox',
+            'end_date': '2025-06-14T00:00:00Z',
         }
 
     @staticmethod
