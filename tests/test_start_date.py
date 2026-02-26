@@ -11,7 +11,6 @@ window overlap.
 from datetime import timedelta
 
 from tap_tester.base_suite_tests.start_date_test import StartDateTest
-from tap_braintree import TRAILING_DAYS as _TRAILING_DAYS
 
 from base import BraintreeBase
 

@@ -23,7 +23,7 @@ class BraintreeBookmarkTest(BookmarkTest, BraintreeBase):
         },
         'transactions': '2025-06-01T00:00:00.000000Z',
         'latest_updated_at': '2025-03-01T00:00:00.000000Z',
-        'latest_disbursment_date': '2025-03-01T00:00:00.000000Z',
+        'latest_disbursement_date': '2025-03-01T00:00:00.000000Z',
     }
 
     def calculate_new_bookmarks(self) -> dict:
@@ -57,7 +57,7 @@ class BraintreeBookmarkTest(BookmarkTest, BraintreeBase):
             if updated_at:
                 new_state['latest_updated_at'] = updated_at
                 # The tap reads this key with the historic typo ('disbursment')
-                new_state['latest_disbursment_date'] = updated_at
+                new_state['latest_disbursement_date'] = updated_at
         return new_state
 
     @staticmethod
