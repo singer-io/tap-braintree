@@ -11,6 +11,7 @@ window overlap.
 from datetime import timedelta
 
 from tap_tester.base_suite_tests.start_date_test import StartDateTest
+from tap_braintree import TRAILING_DAYS as _TRAILING_DAYS
 
 from base import BraintreeBase
 
@@ -34,9 +35,6 @@ class BraintreeStartDateTest(StartDateTest, BraintreeBase):
 
     @property
     def start_date_2(self):
-        # Must be > TRAILING_DAYS after start_date_1 so the query windows differ:
-        #   sync 1 period_start = Jun 01 - 30d = May 02  → all Jun 1-14 records
-        #   sync 2 period_start = Jul 10 - 30d = Jun 10  → only Jun 10-14 records
         return '2025-07-10T00:00:00Z'
 
     # -------------------------------------------------------------------------

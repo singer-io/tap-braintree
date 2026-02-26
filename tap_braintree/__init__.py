@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 from datetime import datetime, timedelta
 import os
 import pytz
@@ -85,7 +84,7 @@ def sync_transactions():
 
     run_maximum_updated_at = latest_updated_at
 
-    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursment_date', DEFAULT_TIMESTAMP))
+    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursement_date', DEFAULT_TIMESTAMP))
 
     run_maximum_disbursement_date = latest_disbursement_date
 

@@ -29,7 +29,6 @@ jobs:
             uv pip install pytest
             pytest tests/unittests
       - run:
-          when: always
           name: 'Integration Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
