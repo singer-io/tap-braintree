@@ -22,6 +22,25 @@ class BraintreeMinimumSelectionTest(MinimumSelectionTest, BraintreeBase):
         "transactions": {"paypal_details"},
     }
 
+    def test_only_automatic_fields_replicated(self):
+        """Override to subtract MISSING_FIELDS before comparing.
+
+        paypal_details is in the schema (and therefore in expected_automatic_fields)
+        but is only populated for PayPal-funded transactions which the sandbox cannot
+        produce.  We exclude it from the expected set here just as AllFieldsTest does
+        via MISSING_FIELDS.
+        """
+        for stream in self.streams_to_test():
+            with self.subTest(stream=stream):
+                expected = (
+                    self.expected_automatic_fields(stream)
+                    - self.MISSING_FIELDS.get(stream, set())
+                )
+                fields_replicated = set(self.actual_field.get(stream, []))
+                self.assertSetEqual(
+                    fields_replicated, expected,
+                    logging="verify only automatic fields are replicated")
+
     @staticmethod
     def name():
         return "tt_braintree_auto"
