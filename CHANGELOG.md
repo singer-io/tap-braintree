@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.0
+  * Updated Python version, Added Integration tests [#60](https://github.com/singer-io/tap-braintree/pull/60)
+
 ## 0.9.5
   * Replace unnecessary if blocks with max() [#57](https://github.com/singer-io/tap-braintree/pull/57)
 
