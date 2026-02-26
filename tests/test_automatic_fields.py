@@ -36,7 +36,7 @@ class BraintreeMinimumSelectionTest(MinimumSelectionTest, BraintreeBase):
                     self.expected_automatic_fields(stream)
                     - self.MISSING_FIELDS.get(stream, set())
                 )
-                fields_replicated = set(self.actual_fields.get(stream, []))
+                fields_replicated = set(self.actual_field.get(stream, []))
                 self.assertSetEqual(
                     fields_replicated, expected,
                     logging="verify only automatic fields are replicated")
