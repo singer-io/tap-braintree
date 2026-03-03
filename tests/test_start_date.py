@@ -34,7 +34,7 @@ class BraintreeStartDateTest(StartDateTest, BraintreeBase):
 
     @property
     def start_date_2(self):
-        return '2025-07-10T00:00:00Z'
+        return '2025-06-10T00:00:00Z'
 
     # -------------------------------------------------------------------------
     # Test overrides
