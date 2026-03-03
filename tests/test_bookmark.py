@@ -56,7 +56,7 @@ class BraintreeBookmarkTest(BookmarkTest, BraintreeBase):
             updated_at = new_bookmarks['transactions'].get('updated_at')
             if updated_at:
                 new_state['latest_updated_at'] = updated_at
-                # The tap reads this key with the historic typo ('disbursment')
+                # Mirror the latest updated_at into the tap's disbursement bookmark key.
                 new_state['latest_disbursement_date'] = updated_at
         return new_state
 
