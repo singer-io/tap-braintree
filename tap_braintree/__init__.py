@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
 
+import json
+import sys
 from datetime import datetime, timedelta
 import os
 import pytz
 
 
 import braintree
+import backoff
 import singer
 
-from singer import utils, metadata
-from singer.catalog import Catalog, CatalogEntry, Schema
+from singer import utils
+from tap_braintree.discover import discover
 from .transform import transform_row
 
+from braintree.exceptions.authentication_error import AuthenticationError
+from braintree.exceptions.too_many_requests_error import TooManyRequestsError
+from braintree.exceptions.server_error import ServerError
+from braintree.exceptions.service_unavailable_error import ServiceUnavailableError
+from braintree.exceptions.gateway_timeout_error import GatewayTimeoutError
+
+
+REQUEST_TIMEOUT = 300
 
 CONFIG = {}
 STATE = {}
@@ -74,6 +85,24 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n), start_date + timedelta(n + 1)
 
 
+@backoff.on_exception(
+    backoff.expo,
+    (
+        ConnectionError,
+        TooManyRequestsError,
+        ServerError,
+        ServiceUnavailableError,
+        GatewayTimeoutError,
+    ),
+    max_tries=5,
+    factor=2,
+)
+def get_transactions_data(start, end):
+    return braintree.Transaction.search(
+        braintree.TransactionSearch.created_at.between(start, end)
+    )
+
+
 def sync_transactions():
     schema = load_schema("transactions")
 
@@ -118,8 +147,7 @@ def sync_transactions():
 
         end = min(end, period_end)
 
-        data = braintree.Transaction.search(
-            braintree.TransactionSearch.created_at.between(start, end))
+        data = get_transactions_data(start, end)
         time_extracted = utils.now()
 
         logger.info("transactions: Fetched {} records from {} - {}".format(
@@ -208,28 +236,19 @@ def sync_transactions():
 
 
 def do_discover():
-    schema_dict = load_schema("transactions")
-    schema = Schema.from_dict(schema_dict)
-    mdata = metadata.get_standard_metadata(
-        schema_dict,
-        key_properties=["id"],
-        valid_replication_keys=["updated_at"],
-        replication_method="INCREMENTAL",
-    )
-    mdata = metadata.to_map(mdata)
-    for field_name in schema_dict["properties"].keys():
-        mdata = metadata.write(mdata, ("properties", field_name), "inclusion", "automatic")
-    catalog = Catalog([
-        CatalogEntry(
-            stream="transactions",
-            tap_stream_id="transactions",
-            key_properties=["id"],
-            schema=schema,
-            metadata=metadata.to_list(mdata),
-        )
-    ])
-    catalog.dump()
-    print()
+    # Generate a client token to verify credentials
+    try:
+        braintree.ClientToken.generate()
+        logger.info("Braintree configuration is valid.")
+    except braintree.exceptions.authentication_error.AuthenticationError as ex:
+        raise Exception("Authentication error: Check your credentials.") from ex
+    except Exception:
+        raise Exception("Unexpected error during Braintree configuration validation.")
+
+    logger.info("Starting discovery")
+    catalog = discover()
+    json.dump(catalog.to_dict(), sys.stdout, indent=2)
+    logger.info("Finished discover")
 
 
 def do_sync():
@@ -245,28 +264,43 @@ def main():
     )
     config = args.config
 
+    try:
+        raw = config.pop("request_timeout", REQUEST_TIMEOUT)
+        request_timeout = float(raw)
+    except (TypeError, ValueError):
+        raise ValueError("Please provide a positive number for `request_timeout`")
+
+    if request_timeout == 0:
+        logger.warning(f"Invalid value for request_timeout; reverting to default {REQUEST_TIMEOUT}")
+        request_timeout = REQUEST_TIMEOUT
+    elif request_timeout < 0:
+        raise ValueError("Please provide a positive number for `request_timeout`")
+
     environment = getattr(
         braintree.Environment, config.pop("environment", "Production")
     )
 
+    config["timeout"] = request_timeout
     CONFIG['start_date'] = config.pop('start_date')
     CONFIG['end_date'] = config.pop('end_date', None)
-
-    braintree.Configuration.configure(environment, **config)
-
-    if args.discover:
-        do_discover()
-        return
 
     if args.state:
         STATE.update(args.state)
 
     try:
-        do_sync()
-    except braintree.exceptions.authentication_error.AuthenticationError:
+        braintree.Configuration.configure(environment, **config)
+        if args.discover:
+            do_discover()
+        elif args.catalog:
+            do_sync()
+    except AuthenticationError:
         logger.critical('Authentication error occured. '
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
+    except TypeError as type_err:
+        raise TypeError("Missing or malformed Braintree config") from type_err
+    except Exception as ex:
+        raise RuntimeError("Unexpected error during Braintree validation") from ex
 
 
 if __name__ == '__main__':

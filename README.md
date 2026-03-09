@@ -30,11 +30,13 @@ This tap:
 3. Create the config file
 
     Create a JSON file called `config.json` containing the Merchant ID, Public Key and Private Key.
+    request_timeout (integer, 300): It is the time for which request should wait to get response. It is an optional parameter and default request_timeout is 300 seconds.
 
     ```json
     {"merchant_id": "your-merchant-id",
      "public_key": "your-public-key",
-     "private_key": "your-private-key"}
+     "private_key": "your-private-key",
+     "request_timeout": 300}
     ```
 
 4. [Optional] Create the initial state file

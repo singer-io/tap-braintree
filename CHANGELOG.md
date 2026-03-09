@@ -1,7 +1,7 @@
 # Changelog
 
-## 0.10.0
-  * Added integration tests [#60](https://github.com/singer-io/tap-braintree/pull/60)
+## 1.0.0
+  * Add support of discovery mode [#55](https://github.com/singer-io/tap-braintree/pull/55)
 
 ## 0.9.5
   * Replace unnecessary if blocks with max() [#57](https://github.com/singer-io/tap-braintree/pull/57)
