@@ -113,17 +113,8 @@ def sync_transactions():
 
     run_maximum_updated_at = latest_updated_at
 
-    if 'latest_disbursement_date' in STATE:
-        latest_disbursement_date_str = STATE['latest_disbursement_date']
-    elif 'latest_disbursment_date' in STATE:
-        # Backwards compatibility: migrate from old misspelled key
-        latest_disbursement_date_str = STATE['latest_disbursment_date']
-        STATE['latest_disbursement_date'] = latest_disbursement_date_str
-        del STATE['latest_disbursment_date']
-    else:
-        latest_disbursement_date_str = DEFAULT_TIMESTAMP
+    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursement_date', DEFAULT_TIMESTAMP))
 
-    latest_disbursement_date = utils.strptime_to_utc(latest_disbursement_date_str)
     run_maximum_disbursement_date = latest_disbursement_date
 
     latest_start_date = utils.strptime_to_utc(get_start("transactions"))
