@@ -23,7 +23,7 @@ class BraintreeStartDateTest(StartDateTest, BraintreeBase):
 
     @staticmethod
     def name():
-        return "tt_braintree_start_date"
+        return "tap_tester_braintree_start_date_test"
 
     def streams_to_test(self):
         return self.expected_stream_names()

@@ -16,7 +16,7 @@ class BraintreeDiscoveryTest(DiscoveryTest, BraintreeBase):
 
     @staticmethod
     def name():
-        return "tt_braintree_discovery"
+        return "tap_tester_braintree_discovery_test"
 
     def streams_to_test(self):
         return self.expected_stream_names()

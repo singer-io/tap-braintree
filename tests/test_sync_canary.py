@@ -1,8 +1,3 @@
-"""
-Early-warning signal that catches environment or dependency breakage before
-the heavier test suite runs — a canary that fails fast on obvious regressions.
-"""
-
 from tap_tester.base_suite_tests.sync_canary_test import SyncCanaryTest
 
 from base import BraintreeBase
@@ -13,7 +8,7 @@ class BraintreeSyncCanaryTest(SyncCanaryTest, BraintreeBase):
 
     @staticmethod
     def name():
-        return "tt_braintree_sync"
+        return "tap_tester_braintree_sync_canary_test"
 
     def streams_to_test(self):
         return self.expected_stream_names()

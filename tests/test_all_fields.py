@@ -21,7 +21,7 @@ class BraintreeAllFieldsTest(AllFieldsTest, BraintreeBase):
 
     @staticmethod
     def name():
-        return "tt_braintree_all_fields"
+        return "tap_tester_braintree_all_fields_test"
 
     def streams_to_test(self):
         return self.expected_stream_names()

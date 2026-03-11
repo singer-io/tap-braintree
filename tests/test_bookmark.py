@@ -62,7 +62,7 @@ class BraintreeBookmarkTest(BookmarkTest, BraintreeBase):
 
     @staticmethod
     def name():
-        return "tt_braintree_bookmark"
+        return "tap_tester_braintree_bookmark_test"
 
     def streams_to_test(self):
         return self.expected_stream_names()
