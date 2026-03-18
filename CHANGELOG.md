@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.0
+  * Bump version to 2.0.0 changes in state writing format [#61](https://github.com/singer-io/tap-braintree/pull/61)
+
 ## 1.0.0
   * Add support of discovery mode [#55](https://github.com/singer-io/tap-braintree/pull/55)
 
