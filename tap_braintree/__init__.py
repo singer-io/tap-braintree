@@ -41,6 +41,13 @@ def load_schema(entity):
 
 
 def get_start(entity, replication_key: str):
+    """ Function to extract bookmark details from state
+
+    Args:
+        entity (str): Stream id
+        replication_key (str): Valid replication key for that stream
+
+    """
 
     bookmark_data = singer.get_bookmark(
         state=STATE,
@@ -109,7 +116,7 @@ def get_transactions_data(start, end):
 
 
 def sync_transactions():
-    global STATE
+    global STATE  # STATE is updated in this function and needs to be global to be written at the end of the function
 
     tap_stream_id = "transactions"
     valid_replication_key = "updated_at"
@@ -119,6 +126,7 @@ def sync_transactions():
     singer.write_schema(tap_stream_id, schema, ["id"],
                         bookmark_properties=[valid_replication_key])
 
+    # Get the latest updated_at and disbursement_date from the bookmark, or use the default timestamp if not found
     bk_latest_updated_at = singer.get_bookmark(
         state=STATE,
         tap_stream_id=tap_stream_id,
@@ -239,6 +247,7 @@ def sync_transactions():
 
     latest_disbursement_date = utils.strftime(run_maximum_disbursement_date)
 
+    # State updation with latest updated_at and disbursement_date bookmarks
     STATE = singer.write_bookmark(
         state=STATE,
         tap_stream_id=tap_stream_id,
