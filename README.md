@@ -46,7 +46,15 @@ This tap:
     If you omit the file it will fetch all Braintree data.
 
     ```json
-    {"transactions": "2017-01-17T20:32:05Z"}
+    {
+        "bookmarks": {
+            "transactions": {
+                "latest_updated_at": "2024-01-01T00:00:00.000000Z",
+                "latest_disbursement_date": "2024-01-01T00:00:00.000000Z",
+                "updated_at": "2024-01-01T00:00:00.000000Z"
+            }
+        }
+    }
     ```
 
 5. Run the application
