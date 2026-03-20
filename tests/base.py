@@ -2,6 +2,7 @@
 Centralises tap connection config and stream expectations so individual test
 classes stay DRY and comparable across the suite.
 """
+from datetime import timedelta
 import os
 
 from tap_tester.base_suite_tests.base_case import BaseCase
@@ -53,6 +54,7 @@ class BraintreeBase(BaseCase):
                 BaseCase.REPLICATION_METHOD: BaseCase.INCREMENTAL,
                 BaseCase.REPLICATION_KEYS: {'updated_at'},
                 BaseCase.RESPECTS_START_DATE: True,
+                BaseCase.LOOK_BACK_WINDOW: timedelta(days=30)
             },
         }
 
