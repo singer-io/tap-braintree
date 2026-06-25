@@ -3,6 +3,9 @@
 ## 2.0.0
   * State standardization [#61](https://github.com/singer-io/tap-braintree/pull/61)
 
+## 1.0.1
+  * Bump requests version for security update [#62](https://github.com/singer-io/tap-braintree/pull/62)
+
 ## 1.0.0
   * Add support of discovery mode [#55](https://github.com/singer-io/tap-braintree/pull/55)
 
