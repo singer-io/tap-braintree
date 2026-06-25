@@ -40,11 +40,23 @@ def load_schema(entity):
     return utils.load_json(get_abs_path("schemas/{}.json".format(entity)))
 
 
-def get_start(entity):
-    if entity not in STATE:
-        STATE[entity] = CONFIG["start_date"]
+def get_start(entity, replication_key: str):
+    """ Function to extract bookmark details from state
 
-    return STATE[entity]
+    Args:
+        entity (str): Stream id
+        replication_key (str): Valid replication key for that stream
+
+    """
+
+    bookmark_data = singer.get_bookmark(
+        state=STATE,
+        tap_stream_id=entity,
+        key=replication_key,
+        default=CONFIG["start_date"]
+    )
+
+    return bookmark_data
 
 
 def to_utc(dt):
@@ -104,24 +116,42 @@ def get_transactions_data(start, end):
 
 
 def sync_transactions():
-    schema = load_schema("transactions")
+    global STATE  # STATE is updated in this function and needs to be global to be written at the end of the function
 
-    singer.write_schema("transactions", schema, ["id"],
-                        bookmark_properties=['created_at'])
+    tap_stream_id = "transactions"
+    valid_replication_key = "updated_at"
 
-    latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
+    schema = load_schema(tap_stream_id)
+
+    singer.write_schema(tap_stream_id, schema, ["id"],
+                        bookmark_properties=[valid_replication_key])
+
+    # Get the latest updated_at and disbursement_date from the bookmark, or use the default timestamp if not found
+    bk_latest_updated_at = singer.get_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_updated_at",
+        default=DEFAULT_TIMESTAMP
+    )
+
+    bk_latest_disbursement_date = singer.get_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_disbursement_date",
+        default=DEFAULT_TIMESTAMP
+    )
+
+    latest_updated_at = utils.strptime_to_utc(bk_latest_updated_at)
+    latest_disbursement_date = utils.strptime_to_utc(bk_latest_disbursement_date)
 
     run_maximum_updated_at = latest_updated_at
-
-    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursment_date', DEFAULT_TIMESTAMP))
-
     run_maximum_disbursement_date = latest_disbursement_date
 
-    latest_start_date = utils.strptime_to_utc(get_start("transactions"))
+    latest_start_date = utils.strptime_to_utc(get_start("transactions", replication_key=valid_replication_key))
 
     period_start = latest_start_date - TRAILING_DAYS
 
-    period_end = utils.now()
+    period_end = utils.strptime_to_utc(CONFIG['end_date']) if CONFIG.get('end_date') else utils.now()
 
     logger.info("transactions: Syncing from {}".format(period_start))
 
@@ -134,6 +164,7 @@ def sync_transactions():
     ))
 
     # increment through each day (20k results max from api)
+    end = period_end  # default so bookmark write is safe if loop never runs
     for start, end in daterange(period_start, period_end):
 
         end = min(end, period_end)
@@ -160,7 +191,7 @@ def sync_transactions():
             # set disbursement datetime to min if not found
 
             if row.disbursement_details is None:
-                disbursement_date = datetime.min
+                disbursement_date = to_utc(datetime.min)
 
             else:
                 if row.disbursement_details.disbursement_date is None:
@@ -212,16 +243,31 @@ def sync_transactions():
         run_maximum_disbursement_date
     ))
 
-    latest_updated_at = run_maximum_updated_at
+    latest_updated_at = utils.strftime(run_maximum_updated_at)
 
-    latest_disbursement_date = run_maximum_disbursement_date
+    latest_disbursement_date = utils.strftime(run_maximum_disbursement_date)
 
-    STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
+    # State updation with latest updated_at and disbursement_date bookmarks
+    STATE = singer.write_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_updated_at",
+        val=latest_updated_at
+    )
 
-    STATE['latest_disbursement_date'] = utils.strftime(
-        latest_disbursement_date)
+    STATE = singer.write_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_disbursement_date",
+        val=latest_disbursement_date
+    )
 
-    utils.update_state(STATE, "transactions", utils.strftime(end))
+    STATE = singer.write_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key=valid_replication_key,
+        val=utils.strftime(end)
+    )
 
     singer.write_state(STATE)
 
@@ -273,6 +319,7 @@ def main():
 
     config["timeout"] = request_timeout
     CONFIG['start_date'] = config.pop('start_date')
+    CONFIG['end_date'] = config.pop('end_date', None)
 
     if args.state:
         STATE.update(args.state)
