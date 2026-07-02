@@ -15,7 +15,7 @@ class BraintreeBase(BaseCase):
     """
 
     # Chosen to coincide with a period that has known sandbox transactions.
-    start_date = '2025-06-01T00:00:00Z'
+    start_date = '2026-06-01T00:00:00Z'
 
     @staticmethod
     def tap_name():
@@ -29,7 +29,6 @@ class BraintreeBase(BaseCase):
         return {
             'start_date': self.start_date,
             'environment': 'Sandbox',
-            'end_date': '2025-06-14T00:00:00Z',
         }
 
     @staticmethod

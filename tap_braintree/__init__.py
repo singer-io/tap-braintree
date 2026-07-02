@@ -151,7 +151,7 @@ def sync_transactions():
 
     period_start = latest_start_date - TRAILING_DAYS
 
-    period_end = utils.strptime_to_utc(CONFIG['end_date']) if CONFIG.get('end_date') else utils.now()
+    period_end = utils.now()
 
     logger.info("transactions: Syncing from {}".format(period_start))
 
@@ -319,7 +319,6 @@ def main():
 
     config["timeout"] = request_timeout
     CONFIG['start_date'] = config.pop('start_date')
-    CONFIG['end_date'] = config.pop('end_date', None)
 
     if args.state:
         STATE.update(args.state)
