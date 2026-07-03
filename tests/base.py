@@ -60,37 +60,13 @@ class BraintreeBase(BaseCase):
     @staticmethod
     def expected_automatic_fields(stream=None):
         """
-        do_discover() marks every field inclusion: automatic, so all top-level
-        schema fields are replicated regardless of field selection. This means
-        the minimum-selection test and the all-fields test cover the same surface.
+        Discovery marks only primary and replication key fields as automatic,
+        so these should always be present in minimal-field syncs.
         """
         automatic_fields = {
             'transactions': {
                 'id',
-                'created_at',
                 'updated_at',
-                'settlement_batch_id',
-                'status',
-                'type',
-                'amount',
-                'payment_instrument_type',
-                'service_fee_amount',
-                'order_id',
-                'plan_id',
-                'gateway_rejection_reason',
-                'processor_authorization_code',
-                'processor_response_code',
-                'processor_response_text',
-                'recurring',
-                'refunded_transaction_id',
-                'currency_iso_code',
-                'merchant_account_id',
-                'subscription_id',
-                'customer_details',
-                'credit_card_details',
-                'subscription_details',
-                'disbursement_details',
-                'paypal_details',
             },
         }
         if stream:
