@@ -2,6 +2,8 @@
 
 ## 2.0.0
   * State standardization [#61](https://github.com/singer-io/tap-braintree/pull/61)
+  * Streams the credentials cannot access (403) are now excluded from the catalog during discovery instead of raising an error [#64](https://github.com/singer-io/tap-braintree/pull/64)
+  * Added unit tests for discovery and access-check behaviour
 
 ## 1.0.1
   * Bump requests version for security update [#62](https://github.com/singer-io/tap-braintree/pull/62)

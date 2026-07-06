@@ -16,6 +16,7 @@ from tap_braintree.discover import discover
 from .transform import transform_row
 
 from braintree.exceptions.authentication_error import AuthenticationError
+from braintree.exceptions.authorization_error import AuthorizationError
 from braintree.exceptions.too_many_requests_error import TooManyRequestsError
 from braintree.exceptions.server_error import ServerError
 from braintree.exceptions.service_unavailable_error import ServiceUnavailableError
@@ -293,8 +294,8 @@ def do_discover():
     try:
         braintree.ClientToken.generate()
         logger.info("Braintree configuration is valid.")
-    except braintree.exceptions.authentication_error.AuthenticationError as ex:
-        raise Exception("Authentication error: Check your credentials.") from ex
+    except braintree.exceptions.authentication_error.AuthenticationError:
+        raise
     except Exception:
         raise Exception("Unexpected error during Braintree configuration validation.")
 
@@ -354,6 +355,10 @@ def main():
         logger.critical('Authentication error occured. '
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
+    except AuthorizationError:
+        logger.critical('Authorization error occured (HTTP 403). '
+                        'The provided credentials do not have permission '
+                        'to access the requested resource.', exc_info=True)
     except TypeError as type_err:
         raise TypeError("Missing or malformed Braintree config") from type_err
     except Exception as ex:
