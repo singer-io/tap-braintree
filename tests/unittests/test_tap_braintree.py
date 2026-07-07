@@ -67,10 +67,6 @@ class TestDateRangeUtility(unittest.TestCase):
         )
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 class TestDoDiscover(unittest.TestCase):
 
     def test_authentication_error_propagates_from_do_discover(self):

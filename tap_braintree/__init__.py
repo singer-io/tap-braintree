@@ -296,8 +296,8 @@ def do_discover():
         logger.info("Braintree configuration is valid.")
     except braintree.exceptions.authentication_error.AuthenticationError:
         raise
-    except Exception:
-        raise Exception("Unexpected error during Braintree configuration validation.")
+    except Exception as ex:
+        raise Exception("Unexpected error during Braintree configuration validation.") from ex
 
     logger.info("Starting discovery")
     catalog = discover()
@@ -356,7 +356,7 @@ def main():
                         'Please check your merchant_id, public_key, and '
                         'private_key for errors', exc_info=True)
     except AuthorizationError:
-        logger.critical('Authorization error occured (HTTP 403). '
+        logger.critical('Authorization error occurred (HTTP 403). '
                         'The provided credentials do not have permission '
                         'to access the requested resource.', exc_info=True)
     except TypeError as type_err:

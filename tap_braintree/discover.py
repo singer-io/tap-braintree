@@ -59,7 +59,7 @@ def _apply_access_checks(schemas: dict, field_metadata: dict) -> None:
 
 def discover() -> Catalog:
     """Run the discovery mode, prepare the catalog file and return the
-    catalog. Streams the credentials cannot read are excluded from the catalog."""
+    catalog. Streams that the credentials cannot read are excluded from the catalog."""
     schemas, field_metadata = get_schemas()
     _apply_access_checks(schemas, field_metadata)
     catalog = Catalog([])
