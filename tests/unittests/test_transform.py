@@ -6,6 +6,24 @@ from tap_braintree import transform as transform_module
 
 
 class TestTransformModule(unittest.TestCase):
+    def test_transform_row_maps_present_attributes(self):
+        class Row:
+            id = "123"
+            amount = "4.5"
+
+        row = Row()
+        schema = {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string"},
+                "amount": {"type": "number"},
+                "missing": {"type": "string"},
+            }
+        }
+
+        result = transform_module.transform_row(row, schema)
+        self.assertEqual({"id": "123", "amount": 4.5}, result)
+
     def test_anyof_uses_first_matching_schema(self):
         value = transform_module._transform_field(
             "12", {"anyOf": [{"type": "integer"}, {"type": "string"}]}
@@ -45,6 +63,10 @@ class TestTransformModule(unittest.TestCase):
         self.assertIsNone(transform_module._type_transform(None, "null"))
         with self.assertRaises(transform_module.InvalidData):
             transform_module._type_transform(None, "string")
+
+    def test_type_transform_list_raises_when_all_types_fail(self):
+        with self.assertRaises(transform_module.InvalidData):
+            transform_module._type_transform("abc", ["integer", "number"])
 
     def test_type_transform_number_boolean_and_unknown(self):
         self.assertEqual(transform_module._type_transform("2.5", "number"), 2.5)
