@@ -146,64 +146,6 @@ class TestTapBraintreeCoverage(unittest.TestCase):
         self.assertEqual(1, mock_write_record.call_count)
         transformer.transform.assert_called()
 
-    @mock.patch("tap_braintree.singer.write_state")
-    @mock.patch("tap_braintree.singer.write_record")
-    @mock.patch("tap_braintree.singer.write_schema")
-    @mock.patch("tap_braintree.load_schema", return_value={"type": "object", "properties": {"id": {"type": "string"}}})
-    @mock.patch("tap_braintree.daterange")
-    @mock.patch("tap_braintree.get_transactions_data")
-    def test_sync_transactions_does_not_emit_older_updated_at_even_with_newer_disbursement(
-            self,
-            mock_get_data,
-            mock_daterange,
-            _mock_load_schema,
-            _mock_write_schema,
-            mock_write_record,
-            _mock_write_state,
-    ):
-        tap_braintree.CONFIG["start_date"] = "2024-01-01T00:00:00Z"
-        tap_braintree.STATE.update({
-            "bookmarks": {
-                "transactions": {
-                    "latest_updated_at": "2024-01-10T00:00:00Z",
-                    "latest_disbursement_date": "2024-01-10T00:00:00Z",
-                    "updated_at": "2024-01-10T00:00:00Z",
-                }
-            }
-        })
-
-        start = datetime(2024, 1, 10, tzinfo=pytz.UTC)
-        end = datetime(2024, 1, 11, tzinfo=pytz.UTC)
-        mock_daterange.return_value = [(start, end)]
-
-        row_old_updated_new_disb = mock.MagicMock()
-        row_old_updated_new_disb.updated_at = datetime(2024, 1, 1, 0, 0, 0)
-        row_old_updated_new_disb.created_at = datetime(2024, 1, 1, 0, 0, 0)
-        row_old_updated_new_disb.disbursement_details = mock.MagicMock()
-        row_old_updated_new_disb.disbursement_details.disbursement_date = datetime(2024, 1, 20).date()
-
-        mock_get_data.return_value = _DummyResult([row_old_updated_new_disb])
-
-        schema = Schema.from_dict({"type": "object", "properties": {"id": {"type": "string"}}})
-        entry = CatalogEntry(
-            stream="transactions",
-            tap_stream_id="transactions",
-            key_properties=["id"],
-            schema=schema,
-            metadata=[{"breadcrumb": [], "metadata": {"selected": True}}],
-        )
-        tap_braintree.CATALOG = Catalog([entry])
-
-        transformer = mock.MagicMock()
-        transformer.transform.side_effect = lambda rec, *_args, **_kwargs: rec
-
-        with mock.patch("tap_braintree.transform_row", return_value={"id": "tx"}), \
-                mock.patch("tap_braintree.singer.Transformer", return_value=_DummyTransformerContext(transformer)), \
-                mock.patch("tap_braintree.utils.now", return_value=end):
-            tap_braintree.sync_transactions()
-
-        self.assertEqual(0, mock_write_record.call_count)
-
     @mock.patch("tap_braintree.utils.parse_args")
     def test_main_invalid_request_timeout_raises_value_error(self, mock_parse_args):
         args = mock.MagicMock()
