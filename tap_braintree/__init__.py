@@ -217,18 +217,11 @@ def sync_transactions():
                         row.disbursement_details.disbursement_date,
                         datetime.min.time()))
 
-                # Is this more recent than our past stored value of update_at?
-                # Is this more recent than our past stored value of disbursement_date?
-                # Use >= for updated_at due to non monotonic updated_at values
-                # Use > for disbursement_date - confirming all transactions disbursed
-                # at the same time
-                # Update our high water mark for updated_at and disbursement_date
-                # in this run
-                if (
-                    updated_at >= latest_updated_at
-                ) or (
-                    disbursement_date >= latest_disbursement_date
-                ):
+                # Emit only records at/after the updated_at bookmark.
+                # Using disbursement_date here can leak records older than the
+                # incremental boundary when disbursement is processed later.
+                # Keep >= for updated_at due to non-monotonic updated_at values.
+                if updated_at >= latest_updated_at:
 
                     run_maximum_updated_at = max(run_maximum_updated_at, updated_at)
 
