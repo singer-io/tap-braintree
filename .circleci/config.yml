@@ -28,11 +28,32 @@ jobs:
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
             stitch-validate-json tap_braintree/schemas/*.json
       - run:
-          name: 'Unit Tests'
+          name: 'Unit Tests & Coverage Run'
           command: |
             source /usr/local/share/virtualenvs/tap-braintree/bin/activate
-            uv pip install pytest
-            pytest tests/unittests
+            uv pip install pytest coverage
+            mkdir -p test_output
+            coverage run --source=tap_braintree -m pytest tests/unittests --junitxml=test_output/report.xml
+      - run:
+          name: 'Coverage Report'
+          command: |
+            source /usr/local/share/virtualenvs/tap-braintree/bin/activate
+            coverage report -m --fail-under=99 | tee coverage.txt
+            coverage html
+      - store_test_results:
+          path: test_output/report.xml
+      - store_artifacts:
+          path: htmlcov
+      - store_artifacts:
+          path: coverage.txt
+      - run:
+          name: 'Integration Tests'
+          command: |
+            source /usr/local/share/virtualenvs/tap-tester/bin/activate
+            aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
+            source dev_env.sh
+            unset USE_STITCH_BACKEND
+            run-test --tap=tap-braintree tests
 workflows:
   version: 2
   commit:

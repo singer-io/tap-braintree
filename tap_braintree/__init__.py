@@ -11,7 +11,7 @@ import braintree
 import backoff
 import singer
 
-from singer import utils
+from singer import utils, metadata
 from tap_braintree.discover import discover
 from .transform import transform_row
 
@@ -26,10 +26,22 @@ REQUEST_TIMEOUT = 300
 
 CONFIG = {}
 STATE = {}
+CATALOG = None
 TRAILING_DAYS = timedelta(days=30)
 DEFAULT_TIMESTAMP = "1970-01-01T00:00:00Z"
 
 logger = singer.get_logger()
+
+
+def get_stream_metadata_map(tap_stream_id):
+    if not CATALOG:
+        return None
+
+    for stream in CATALOG.streams:
+        if stream.tap_stream_id == tap_stream_id:
+            return metadata.to_map(stream.metadata)
+
+    return None
 
 
 def get_abs_path(path):
@@ -40,11 +52,23 @@ def load_schema(entity):
     return utils.load_json(get_abs_path("schemas/{}.json".format(entity)))
 
 
-def get_start(entity):
-    if entity not in STATE:
-        STATE[entity] = CONFIG["start_date"]
+def get_start(entity, replication_key: str):
+    """ Function to extract bookmark details from state
 
-    return STATE[entity]
+    Args:
+        entity (str): Stream id
+        replication_key (str): Valid replication key for that stream
+
+    """
+
+    bookmark_data = singer.get_bookmark(
+        state=STATE,
+        tap_stream_id=entity,
+        key=replication_key,
+        default=CONFIG["start_date"]
+    )
+
+    return bookmark_data
 
 
 def to_utc(dt):
@@ -104,20 +128,39 @@ def get_transactions_data(start, end):
 
 
 def sync_transactions():
-    schema = load_schema("transactions")
+    global STATE  # STATE is updated in this function and needs to be global to be written at the end of the function
 
-    singer.write_schema("transactions", schema, ["id"],
-                        bookmark_properties=['created_at'])
+    tap_stream_id = "transactions"
+    valid_replication_key = "updated_at"
 
-    latest_updated_at = utils.strptime_to_utc(STATE.get('latest_updated_at', DEFAULT_TIMESTAMP))
+    schema = load_schema(tap_stream_id)
+    stream_metadata = get_stream_metadata_map(tap_stream_id)
+
+    singer.write_schema(tap_stream_id, schema, ["id"],
+                        bookmark_properties=[valid_replication_key])
+
+    # Get the latest updated_at and disbursement_date from the bookmark, or use the default timestamp if not found
+    bk_latest_updated_at = singer.get_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_updated_at",
+        default=DEFAULT_TIMESTAMP
+    )
+
+    bk_latest_disbursement_date = singer.get_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_disbursement_date",
+        default=DEFAULT_TIMESTAMP
+    )
+
+    latest_updated_at = utils.strptime_to_utc(bk_latest_updated_at)
+    latest_disbursement_date = utils.strptime_to_utc(bk_latest_disbursement_date)
 
     run_maximum_updated_at = latest_updated_at
-
-    latest_disbursement_date = utils.strptime_to_utc(STATE.get('latest_disbursment_date', DEFAULT_TIMESTAMP))
-
     run_maximum_disbursement_date = latest_disbursement_date
 
-    latest_start_date = utils.strptime_to_utc(get_start("transactions"))
+    latest_start_date = utils.strptime_to_utc(get_start("transactions", replication_key=valid_replication_key))
 
     period_start = latest_start_date - TRAILING_DAYS
 
@@ -134,74 +177,78 @@ def sync_transactions():
     ))
 
     # increment through each day (20k results max from api)
-    for start, end in daterange(period_start, period_end):
+    end = period_end  # default so bookmark write is safe if loop never runs
+    with singer.Transformer() as transformer:
+        for start, end in daterange(period_start, period_end):
 
-        end = min(end, period_end)
+            end = min(end, period_end)
 
-        data = get_transactions_data(start, end)
-        time_extracted = utils.now()
+            data = get_transactions_data(start, end)
+            time_extracted = utils.now()
 
-        logger.info("transactions: Fetched {} records from {} - {}".format(
-            data.maximum_size, start, end
-        ))
+            logger.info("transactions: Fetched {} records from {} - {}".format(
+                data.maximum_size, start, end
+            ))
 
-        row_written_count = 0
-        row_skipped_count = 0
+            row_written_count = 0
+            row_skipped_count = 0
 
-        for row in data:
-            # Ensure updated_at consistency
-            if not getattr(row, 'updated_at'):
-                row.updated_at = row.created_at
+            for row in data:
+                # Ensure updated_at consistency
+                if not getattr(row, 'updated_at'):
+                    row.updated_at = row.created_at
 
-            transformed = transform_row(row, schema)
-            updated_at = to_utc(row.updated_at)
+                transformed = transform_row(row, schema)
+                if stream_metadata:
+                    transformed = transformer.transform(transformed, schema, stream_metadata)
+                updated_at = to_utc(row.updated_at)
 
-            # if disbursement is successful, get disbursement date
-            # set disbursement datetime to min if not found
+                # if disbursement is successful, get disbursement date
+                # set disbursement datetime to min if not found
 
-            if row.disbursement_details is None:
-                disbursement_date = datetime.min
+                if row.disbursement_details is None:
+                    disbursement_date = to_utc(datetime.min)
 
-            else:
-                if row.disbursement_details.disbursement_date is None:
-                    row.disbursement_details.disbursement_date = datetime.min
+                else:
+                    if row.disbursement_details.disbursement_date is None:
+                        row.disbursement_details.disbursement_date = datetime.min
 
-                disbursement_date = to_utc(datetime.combine(
-                    row.disbursement_details.disbursement_date,
-                    datetime.min.time()))
+                    disbursement_date = to_utc(datetime.combine(
+                        row.disbursement_details.disbursement_date,
+                        datetime.min.time()))
 
-            # Is this more recent than our past stored value of update_at?
-            # Is this more recent than our past stored value of disbursement_date?
-            # Use >= for updated_at due to non monotonic updated_at values
-            # Use > for disbursement_date - confirming all transactions disbursed
-            # at the same time
-            # Update our high water mark for updated_at and disbursement_date
-            # in this run
-            if (
-                updated_at >= latest_updated_at
-            ) or (
-                disbursement_date >= latest_disbursement_date
-            ):
+                # Is this more recent than our past stored value of update_at?
+                # Is this more recent than our past stored value of disbursement_date?
+                # Use >= for updated_at due to non monotonic updated_at values
+                # Use > for disbursement_date - confirming all transactions disbursed
+                # at the same time
+                # Update our high water mark for updated_at and disbursement_date
+                # in this run
+                if (
+                    updated_at >= latest_updated_at
+                ) or (
+                    disbursement_date >= latest_disbursement_date
+                ):
 
-                run_maximum_updated_at = max(run_maximum_updated_at, updated_at)
+                    run_maximum_updated_at = max(run_maximum_updated_at, updated_at)
 
-                run_maximum_disbursement_date = max(run_maximum_disbursement_date, disbursement_date)
+                    run_maximum_disbursement_date = max(run_maximum_disbursement_date, disbursement_date)
 
-                singer.write_record("transactions", transformed,
-                                    time_extracted=time_extracted)
-                row_written_count += 1
+                    singer.write_record("transactions", transformed,
+                                        time_extracted=time_extracted)
+                    row_written_count += 1
 
-            else:
+                else:
 
-                row_skipped_count += 1
+                    row_skipped_count += 1
 
-        logger.info("transactions: Written {} records from {} - {}".format(
-            row_written_count, start, end
-        ))
+            logger.info("transactions: Written {} records from {} - {}".format(
+                row_written_count, start, end
+            ))
 
-        logger.info("transactions: Skipped {} records from {} - {}".format(
-            row_skipped_count, start, end
-        ))
+            logger.info("transactions: Skipped {} records from {} - {}".format(
+                row_skipped_count, start, end
+            ))
 
     # End day loop
     logger.info("transactions: Complete. Last updated record: {}".format(
@@ -212,16 +259,31 @@ def sync_transactions():
         run_maximum_disbursement_date
     ))
 
-    latest_updated_at = run_maximum_updated_at
+    latest_updated_at = utils.strftime(run_maximum_updated_at)
 
-    latest_disbursement_date = run_maximum_disbursement_date
+    latest_disbursement_date = utils.strftime(run_maximum_disbursement_date)
 
-    STATE['latest_updated_at'] = utils.strftime(latest_updated_at)
+    # State updation with latest updated_at and disbursement_date bookmarks
+    STATE = singer.write_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_updated_at",
+        val=latest_updated_at
+    )
 
-    STATE['latest_disbursement_date'] = utils.strftime(
-        latest_disbursement_date)
+    STATE = singer.write_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key="latest_disbursement_date",
+        val=latest_disbursement_date
+    )
 
-    utils.update_state(STATE, "transactions", utils.strftime(end))
+    STATE = singer.write_bookmark(
+        state=STATE,
+        tap_stream_id=tap_stream_id,
+        key=valid_replication_key,
+        val=utils.strftime(end)
+    )
 
     singer.write_state(STATE)
 
@@ -250,6 +312,8 @@ def do_sync():
 
 @utils.handle_top_exception(logger)
 def main():
+    global CATALOG
+
     args = utils.parse_args(
         ["merchant_id", "public_key", "private_key", "start_date"]
     )
@@ -277,6 +341,9 @@ def main():
     if args.state:
         STATE.update(args.state)
 
+    if args.catalog:
+        CATALOG = args.catalog
+
     try:
         braintree.Configuration.configure(environment, **config)
         if args.discover:
@@ -293,5 +360,5 @@ def main():
         raise RuntimeError("Unexpected error during Braintree validation") from ex
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
