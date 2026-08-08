@@ -97,6 +97,9 @@
                 },
                 "card_type": {
                     "type": ["null", "string"]
+                },
+                "masked_number": {
+                    "type": ["null", "string"]
                 }
             }
         },
