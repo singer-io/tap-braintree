@@ -52,6 +52,7 @@ class BraintreeBase(BaseCase):
                 BaseCase.PRIMARY_KEYS: {'id'},
                 BaseCase.REPLICATION_METHOD: BaseCase.INCREMENTAL,
                 BaseCase.REPLICATION_KEYS: {'updated_at'},
+                BaseCase.API_LIMIT: 100,
                 BaseCase.RESPECTS_START_DATE: True,
                 BaseCase.LOOK_BACK_WINDOW: timedelta(days=30)
             },
