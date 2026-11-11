@@ -12,8 +12,6 @@ from base import BraintreeBase
 class BraintreeDiscoveryTest(DiscoveryTest, BraintreeBase):
     """Standard Discovery Test"""
 
-    expected_replication_keys = BraintreeBase.expected_replication_keys
-
     @staticmethod
     def name():
         return "tap_tester_braintree_discovery_test"
