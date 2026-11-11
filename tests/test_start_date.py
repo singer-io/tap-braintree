@@ -8,14 +8,9 @@ far enough apart that the record-count difference is unambiguous despite the
 window overlap.
 """
 
-from datetime import timedelta
-
 from tap_tester.base_suite_tests.start_date_test import StartDateTest
 
 from base import BraintreeBase
-
-# Must match TRAILING_DAYS in tap_braintree/__init__.py
-_TRAILING_DAYS = timedelta(days=30)
 
 
 class BraintreeStartDateTest(StartDateTest, BraintreeBase):
@@ -40,21 +35,23 @@ class BraintreeStartDateTest(StartDateTest, BraintreeBase):
     # Test overrides
     #
     # The base assertions compare record replication-key values directly against
-    # start_date, but this tap queries [start_date - 30d, end_date], so records
-    # older than start_date are legitimately present.  We override both
-    # assertions to use the effective window start (start_date - TRAILING_DAYS).
+    # start_date, but this tap queries [start_date - TRAILING_DAYS, end_date], so
+    # records older than start_date are legitimately present.  We override both
+    # assertions to use the effective window start (start_date - lookback), where
+    # the lookback comes from LOOK_BACK_WINDOW in base.py.
     # -------------------------------------------------------------------------
 
-    def _effective_start(self, start_date_str: str):
-        """Return start_date shifted back by TRAILING_DAYS as a datetime."""
-        return self.parse_date(start_date_str) - _TRAILING_DAYS
+    def _effective_start(self, start_date_str: str, stream: str):
+        """Return start_date shifted back by the stream's lookback window."""
+        return self.parse_date(start_date_str) - self.expected_lookback_window(stream)
 
     def test_replication_key_values(self):
         for stream in self.streams_to_test():
             with self.subTest(stream=stream):
                 replication_key = next(iter(self.expected_replication_keys(stream)))
-                effective_start_1 = self._effective_start(self.start_date_1)
-                effective_start_2 = self._effective_start(self.start_date_2)
+                lookback = self.expected_lookback_window(stream)
+                effective_start_1 = self._effective_start(self.start_date_1, stream)
+                effective_start_2 = self._effective_start(self.start_date_2, stream)
 
                 for sync_num, messages, effective_start in [
                     (1, StartDateTest.synced_messages_by_stream_1, effective_start_1),
@@ -69,14 +66,14 @@ class BraintreeStartDateTest(StartDateTest, BraintreeBase):
                                 record_date, effective_start,
                                 msg=f"sync {sync_num}: record {record_date} is before "
                                     f"effective window start {effective_start} "
-                                    f"(start_date - {_TRAILING_DAYS.days}d)")
+                                    f"(start_date - {lookback.days}d)")
 
     def test_replicated_records(self):
         for stream in self.streams_to_test():
             with self.subTest(stream=stream):
                 replication_key = next(iter(self.expected_replication_keys(stream)))
                 primary_keys = self.expected_primary_keys(stream)
-                effective_start_2 = self._effective_start(self.start_date_2)
+                effective_start_2 = self._effective_start(self.start_date_2, stream)
 
                 count_1 = StartDateTest.record_count_by_stream_1.get(stream, 0)
                 count_2 = StartDateTest.record_count_by_stream_2.get(stream, 0)

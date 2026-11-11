@@ -12,7 +12,3 @@ class BraintreeSyncCanaryTest(SyncCanaryTest, BraintreeBase):
 
     def streams_to_test(self):
         return self.expected_stream_names()
-
-    def setUp(self):  # pylint: disable=invalid-name
-        self.start_date = '2026-06-01T00:00:00Z'
-        super().setUp()

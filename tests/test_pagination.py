@@ -11,8 +11,6 @@ from base import BraintreeBase
 class BraintreePaginationTest(PaginationTest, BraintreeBase):
     """Pagination coverage for the only paginated Braintree stream."""
 
-    PAGE_SIZE = 100
-
     @staticmethod
     def name():
         return "tap_tester_braintree_pagination_test"

@@ -46,13 +46,15 @@ class BraintreeBase(BaseCase):
         tap catch late-settling disbursements without re-syncing all history.
         RESPECTS_START_DATE is True because records outside
         (start_date - TRAILING_DAYS, now] are never emitted.
+        API_LIMIT is the server-enforced Transaction.search page size
+        (search_results.page_size); the SDK fetches ids in chunks of this size.
         """
         return {
             'transactions': {
                 BaseCase.PRIMARY_KEYS: {'id'},
                 BaseCase.REPLICATION_METHOD: BaseCase.INCREMENTAL,
                 BaseCase.REPLICATION_KEYS: {'updated_at'},
-                BaseCase.API_LIMIT: 100,
+                BaseCase.API_LIMIT: 50,
                 BaseCase.RESPECTS_START_DATE: True,
                 BaseCase.LOOK_BACK_WINDOW: timedelta(days=30)
             },
